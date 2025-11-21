@@ -1,0 +1,44 @@
+{% extends 'base.html' %}
+
+{% block title %}Send Message{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header bg-info text-white text-center">
+                    <h2><i class="fas fa-paper-plane"></i> {% if user.profile.role == 'Candidate' %}Send Inquiry to Examiner{% else %}Send Message to Candidate{% endif %}</h2>
+                </div>
+                <div class="card-body">
+                    <form method="post">
+                        {% csrf_token %}
+                        {% if reply_to %}
+                            <input type="hidden" name="receiver" value="{{ reply_to }}">
+                            <div class="alert alert-info">Replying to: {{ users.0.username }}</div>
+                        {% else %}
+                            <div class="form-group">
+                                <label for="receiver"><i class="fas fa-user"></i> Receiver</label>
+                                <select name="receiver" class="form-control" id="receiver">
+                                    {% for user in users %}
+                                        <option value="{{ user.id }}">{{ user.username }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        {% endif %}
+                        <div class="form-group">
+                            <label for="subject"><i class="fas fa-heading"></i> Subject</label>
+                            <input type="text" name="subject" class="form-control" id="subject" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="body"><i class="fas fa-edit"></i> Message</label>
+                            <textarea name="body" class="form-control" rows="5" id="body" required></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-success btn-block"><i class="fas fa-send"></i> Send</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

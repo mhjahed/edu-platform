@@ -1,0 +1,96 @@
+{% extends 'base/base.html' %}
+{% load static %}
+
+{% block title %}Login - Final Exam Management System{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-6 col-lg-4">
+        <div class="card">
+            <div class="card-header text-center">
+                <h3 class="mb-0">
+                    <i class="fas fa-sign-in-alt me-2"></i>Sign In
+                </h3>
+            </div>
+            <div class="card-body">
+                <form method="post" class="needs-validation" novalidate>
+                    {% csrf_token %}
+                    
+                    {% if form.errors %}
+                        <div class="alert alert-danger">
+                            {% for field, errors in form.errors.items %}
+                                {% for error in errors %}
+                                    <div>{{ error }}</div>
+                                {% endfor %}
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                    
+                    <div class="mb-3">
+                        <label for="{{ form.username.id_for_label }}" class="form-label">
+                            <i class="fas fa-user me-1"></i>Username
+                        </label>
+                        <input 
+                            type="text" 
+                            class="form-control" 
+                            id="{{ form.username.id_for_label }}"
+                            name="{{ form.username.name }}"
+                            value="{{ form.username.value|default:'' }}"
+                            required
+                        >
+                        <div class="invalid-feedback">
+                            Please provide a username.
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="{{ form.password.id_for_label }}" class="form-label">
+                            <i class="fas fa-lock me-1"></i>Password
+                        </label>
+                        <input 
+                            type="password" 
+                            class="form-control" 
+                            id="{{ form.password.id_for_label }}"
+                            name="{{ form.password.name }}"
+                            required
+                        >
+                        <div class="invalid-feedback">
+                            Please provide a password.
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3 form-check">
+                        <input type="checkbox" class="form-check-input" id="remember_me" name="remember_me">
+                        <label class="form-check-label" for="remember_me">
+                            Remember me
+                        </label>
+                    </div>
+                    
+                    <button type="submit" class="btn btn-primary w-100" data-loading-text="Signing in...">
+                        <i class="fas fa-sign-in-alt me-2"></i>Sign In
+                    </button>
+                </form>
+            </div>
+            <div class="card-footer text-center">
+                <p class="mb-2">
+                    <a href="{% url 'accounts:password_reset' %}" class="text-decoration-none">
+                        <i class="fas fa-key me-1"></i>Forgot password?
+                    </a>
+                </p>
+                <p class="mb-0">
+                    Don't have an account? 
+                    <a href="{% url 'accounts:register' %}" class="text-decoration-none">
+                        <i class="fas fa-user-plus me-1"></i>Sign up
+                    </a>
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Add any login-specific JavaScript here
+</script>
+{% endblock %}

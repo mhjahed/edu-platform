@@ -1,0 +1,39 @@
+{% extends 'base.html' %}
+
+{% block title %}Candidate Dashboard{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h2 class="text-center mb-4"><i class="fas fa-user-graduate"></i> Candidate Dashboard</h2>
+    <h3><i class="fas fa-calendar-alt"></i> Available Exams</h3>
+    <div class="row">
+        {% for exam in exams %}
+            <div class="col-md-4 mb-3">
+                <div class="exam-item">
+                    <h5>{{ exam.title }}</h5>
+                    <p>{{ exam.description }}</p>
+                    <a href="{% url 'register_for_exam' exam.id %}" class="btn btn-light">Register</a>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+    <h3 class="mt-5"><i class="fas fa-clipboard-list"></i> Your Registrations</h3>
+    <div class="row">
+        {% for reg in registrations %}
+            <div class="col-md-6 mb-3">
+                <div class="registration-item">
+                    <h5>{{ reg.exam.title }}</h5>
+                    <p>Status: {{ reg.status }}</p>
+                    {% if reg.status == 'Verified' %}
+                        <a href="{% url 'take_exam' reg.exam.id %}" class="btn btn-light">Take Exam</a>
+                    {% endif %}
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+    <div class="text-center mt-4">
+        <a href="{% url 'send_message' %}" class="btn btn-warning btn-lg mr-3"><i class="fas fa-envelope"></i> Send Inquiry</a>
+        <a href="{% url 'view_results' %}" class="btn btn-info btn-lg"><i class="fas fa-chart-bar"></i> View Results</a>
+    </div>
+</div>
+{% endblock %}

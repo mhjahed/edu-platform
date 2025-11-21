@@ -1,0 +1,152 @@
+{% extends 'base.html' %}
+
+{% block title %}Browse Exams - Exam Management System{% endblock %}
+
+{% block content %}
+<style>
+    h5{
+        color:white;
+    }
+</style>
+<div class="row">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2><i class="fas fa-search me-2"></i>Available Exams</h2>
+            <a href="{% url 'candidate_home' %}" class="btn btn-outline-primary">
+                <i class="fas fa-arrow-left me-2"></i>Back to Home
+            </a>
+        </div>
+    </div>
+</div>
+
+{% if exams %}
+    <div class="row">
+        {% for exam in exams %}
+        <div class="col-md-6 col-lg-4 mb-4">
+            <div class="card h-100">
+                <div class="card-header bg-primary">
+                    <h5 class="mb-0">{{ exam.title }}</h5>
+                </div>
+                <div class="card-body">
+                    <p class="card-text">{{ exam.description|truncatechars:100 }}</p>
+                    
+                    <div class="mb-3">
+                        <div class="row">
+                            <div class="col-6">
+                                <small class="text-white">
+                                    <i class="fas fa-user me-1"></i><strong>Examiner:</strong><br>
+                                    {{ exam.examiner_name }}
+                                </small>
+                            </div>
+                            <div class="col-6">
+                                <small class="text-white">
+                                    <i class="fas fa-clock me-1"></i><strong>Duration:</strong><br>
+                                    {{ exam.duration }} minutes
+                                </small>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <div class="row">
+                            <div class="col-6">
+                                <small class="text-white">
+                                    <i class="fas fa-calendar me-1"></i><strong>Exam Date:</strong><br>
+                                    {{ exam.exam_start|date:"M d, Y" }}
+                                </small>
+                            </div>
+                            <div class="col-6">
+                                <small class="text-white">
+                                    <i class="fas fa-clock me-1"></i><strong>Time:</strong><br>
+                                    {{ exam.exam_start|time:"g:i A" }}
+                                </small>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <small class="text-white">
+                            <i class="fas fa-calendar-check me-1"></i><strong>Registration Deadline:</strong><br>
+                            {{ exam.registration_end|date:"M d, Y" }} at {{ exam.registration_end|time:"g:i A" }}
+                        </small>
+                    </div>
+                    
+                    {% if exam.instructions %}
+                    <div class="mb-3">
+                        <small class="text-white">
+                            <i class="fas fa-info-circle me-1"></i><strong>Instructions:</strong><br>
+                            {{ exam.instructions|truncatechars:80 }}
+                        </small>
+                    </div>
+                    {% endif %}
+                </div>
+                <div class="card-footer">
+                    <div class="d-grid">
+                        <a href="{% url 'register_for_exam' exam.id %}" class="btn btn-primary">
+                            <i class="fas fa-user-plus me-2"></i>Register for Exam
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+{% else %}
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body text-center py-5">
+                    <i class="fas fa-search fa-4x text-muted mb-4"></i>
+                    <h4 class="text-muted">No exams available</h4>
+                    <p class="text-muted">There are currently no exams open for registration.</p>
+                    <a href="{% url 'candidate_home' %}" class="btn btn-primary">
+                        <i class="fas fa-home me-2"></i>Back to Home
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endif %}
+
+<!-- Registration Tips -->
+<div class="row mt-5">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-lightbulb me-2"></i>Registration Tips</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-4 mb-3">
+                        <div class="d-flex">
+                            <i class="fas fa-check-circle text-success me-3 mt-1"></i>
+                            <div>
+                                <h6>Check Requirements</h6>
+                                <p class="text-white small">Make sure you meet all exam requirements before registering.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <div class="d-flex">
+                            <i class="fas fa-check-circle text-success me-3 mt-1"></i>
+                            <div>
+                                <h6>Prepare Documents</h6>
+                                <p class="text-white small">Have your exam code ready from your examiner.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <div class="d-flex">
+                            <i class="fas fa-check-circle text-success me-3 mt-1"></i>
+                            <div>
+                                <h6>Register Early</h6>
+                                <p class="text-white small">Don't wait until the last minute to register.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,164 @@
+{% extends 'base.html' %}
+
+{% block title %}My Requests - Exam Management System{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2><i class="fas fa-envelope me-2"></i>My Requests & Inquiries</h2>
+            <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#newRequestModal">
+                <i class="fas fa-plus me-2"></i>New Request
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- New Request Modal -->
+<div class="modal fade" id="newRequestModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Submit New Request</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="post">
+                {% csrf_token %}
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="{{ form.subject.id_for_label }}" class="form-label">Subject *</label>
+                        {{ form.subject }}
+                        {% if form.subject.errors %}
+                            <div class="text-danger small">{{ form.subject.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="{{ form.message.id_for_label }}" class="form-label">Message *</label>
+                        {{ form.message }}
+                        {% if form.message.errors %}
+                            <div class="text-danger small">{{ form.message.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Submit Request</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Requests List -->
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-list me-2"></i>Request History</h5>
+            </div>
+            <div class="card-body">
+                {% if requests %}
+                    <div class="accordion" id="requestsAccordion">
+                        {% for request in requests %}
+                        <div class="accordion-item">
+                            <h2 class="accordion-header" id="heading{{ request.id }}">
+                                <button class="accordion-button {% if not forloop.first %}collapsed{% endif %}" type="button" data-bs-toggle="collapse" data-bs-target="#collapse{{ request.id }}">
+                                    <div class="d-flex justify-content-between w-100 me-3">
+                                        <div>
+                                            <strong>{{ request.subject }}</strong>
+                                            <br><small class="text-red">{{ request.created_at|date:"M d, Y g:i A" }}</small>
+                                        </div>
+                                        <div>
+                                            <span class="badge bg-{% if request.status == 'pending' %}warning{% elif request.status == 'replied' %}success{% else %}info{% endif %}">
+                                                {{ request.status|title }}
+                                            </span>
+                                        </div>
+                                    </div>
+                                </button>
+                            </h2>
+                            <div id="collapse{{ request.id }}" class="accordion-collapse collapse {% if forloop.first %}show{% endif %}" data-bs-parent="#requestsAccordion">
+                                <div class="accordion-body">
+                                    <div class="mb-3">
+                                        <h6>Your Message:</h6>
+                                        <p class="text-black">{{ request.message|linebreaks }}</p>
+                                    </div>
+                                    
+                                    {% if request.reply %}
+                                    <div class="alert alert-success">
+                                        <h6><i class="fas fa-reply me-2"></i>Examiner Reply:</h6>
+                                        <p class="mb-0">{{ request.reply|linebreaks }}</p>
+                                        <small class="text-black">
+                                            Replied on {{ request.replied_at|date:"M d, Y g:i A" }}
+                                            {% if request.replied_by %}
+                                                by {{ request.replied_by.first_name|default:request.replied_by.username }}
+                                            {% endif %}
+                                        </small>
+                                    </div>
+                                    {% else %}
+                                    <div class="alert alert-info">
+                                        <i class="fas fa-clock me-2"></i>Your request is pending review by the examiner.
+                                    </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <div class="text-center py-5">
+                        <i class="fas fa-envelope fa-3x text-white mb-3"></i>
+                        <h5 class="text-white">No requests submitted</h5>
+                        <p class="text-white">You haven't submitted any requests or inquiries yet.</p>
+                        <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#newRequestModal">
+                            <i class="fas fa-plus me-2"></i>Submit Your First Request
+                        </button>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Help Section -->
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-question-circle me-2"></i>Need Help?</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-4 mb-3">
+                        <div class="d-flex">
+                            <i class="fas fa-info-circle text-primary me-3 mt-1"></i>
+                            <div>
+                                <h6>General Inquiries</h6>
+                                <p class="text-white small">Ask questions about exam procedures, requirements, or general information.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <div class="d-flex">
+                            <i class="fas fa-exclamation-triangle text-warning me-3 mt-1"></i>
+                            <div>
+                                <h6>Technical Issues</h6>
+                                <p class="text-white small">Report any technical problems you encounter during registration or exam taking.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <div class="d-flex">
+                            <i class="fas fa-calendar text-success me-3 mt-1"></i>
+                            <div>
+                                <h6>Schedule Changes</h6>
+                                <p class="text-white small">Request schedule changes or inform about conflicts with exam timing.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

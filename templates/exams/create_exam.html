@@ -1,0 +1,421 @@
+{% extends 'base/base.html' %}
+{% load static %}
+
+{% block title %}Create Exam - Final Exam Management System{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <!-- Header -->
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+                <h1 class="h2 mb-1">
+                    <i class="fas fa-plus-circle me-2"></i>Create New Exam
+                </h1>
+                <p class="text-muted">Set up a new exam with questions and timing</p>
+            </div>
+            <div>
+                <a href="{% url 'exams:examiner_dashboard' %}" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left me-2"></i>Back to Dashboard
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row justify-content-center">
+    <div class="col-lg-10">
+        <form method="post" class="needs-validation" novalidate id="examForm" data-auto-save="true">
+            {% csrf_token %}
+            
+            {% if form.non_field_errors %}
+                <div class="alert alert-danger">
+                    {% for error in form.non_field_errors %}
+                        <div>{{ error }}</div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+            
+            <!-- Basic Information -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-info-circle me-2"></i>Basic Information
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="{{ form.exam_code.id_for_label }}" class="form-label">
+                                <i class="fas fa-barcode me-1"></i>Exam Code *
+                            </label>
+                            {{ form.exam_code }}
+                            {% if form.exam_code.errors %}
+                                <div class="text-danger small">
+                                    {% for error in form.exam_code.errors %}{{ error }}{% endfor %}
+                                </div>
+                            {% endif %}
+                            <div class="form-text">
+                                Unique identifier for this exam (e.g., EXAM2025001)
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6 mb-3">
+                            <label for="{{ form.duration_minutes.id_for_label }}" class="form-label">
+                                <i class="fas fa-clock me-1"></i>Duration (Minutes) *
+                            </label>
+                            {{ form.duration_minutes }}
+                            {% if form.duration_minutes.errors %}
+                                <div class="text-danger small">
+                                    {% for error in form.duration_minutes.errors %}{{ error }}{% endfor %}
+                                </div>
+                            {% endif %}
+                            <div class="form-text">
+                                How long candidates have to complete the exam
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="{{ form.title.id_for_label }}" class="form-label">
+                            <i class="fas fa-heading me-1"></i>Exam Title *
+                        </label>
+                        {{ form.title }}
+                        {% if form.title.errors %}
+                            <div class="text-danger small">
+                                {% for error in form.title.errors %}{{ error }}{% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="{{ form.description.id_for_label }}" class="form-label">
+                            <i class="fas fa-align-left me-1"></i>Description
+                        </label>
+                        {{ form.description }}
+                        {% if form.description.errors %}
+                            <div class="text-danger small">
+                                {% for error in form.description.errors %}{{ error }}{% endfor %}
+                            </div>
+                        {% endif %}
+                        <div class="form-text">
+                            Provide instructions, content overview, or other details for candidates
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Timing & Schedule -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-calendar-alt me-2"></i>Schedule & Timing
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="{{ form.registration_start.id_for_label }}" class="form-label">
+                                <i class="fas fa-calendar-plus me-1"></i>Registration Start *
+                            </label>
+                            {{ form.registration_start }}
+                            {% if form.registration_start.errors %}
+                                <div class="text-danger small">
+                                    {% for error in form.registration_start.errors %}{{ error }}{% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="col-md-6 mb-3">
+                            <label for="{{ form.registration_end.id_for_label }}" class="form-label">
+                                <i class="fas fa-calendar-minus me-1"></i>Registration End *
+                            </label>
+                            {{ form.registration_end }}
+                            {% if form.registration_end.errors %}
+                                <div class="text-danger small">
+                                    {% for error in form.registration_end.errors %}{{ error }}{% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="{{ form.exam_start.id_for_label }}" class="form-label">
+                                <i class="fas fa-play me-1"></i>Exam Start *
+                            </label>
+                            {{ form.exam_start }}
+                            {% if form.exam_start.errors %}
+                                <div class="text-danger small">
+                                    {% for error in form.exam_start.errors %}{{ error }}{% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="col-md-6 mb-3">
+                            <label for="{{ form.exam_end.id_for_label }}" class="form-label">
+                                <i class="fas fa-stop me-1"></i>Exam End *
+                            </label>
+                            {{ form.exam_end }}
+                            {% if form.exam_end.errors %}
+                                <div class="text-danger small">
+                                    {% for error in form.exam_end.errors %}{{ error }}{% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle me-2"></i>
+                        <strong>Timeline:</strong> Registration period should end before the exam starts. 
+                        The exam end time should provide enough buffer after the duration for late submissions.
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Exam Settings -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-cogs me-2"></i>Exam Settings
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-4 mb-3">
+                            <label for="{{ form.max_participants.id_for_label }}" class="form-label">
+                                <i class="fas fa-users me-1"></i>Max Participants
+                            </label>
+                            {{ form.max_participants }}
+                            {% if form.max_participants.errors %}
+                                <div class="text-danger small">
+                                    {% for error in form.max_participants.errors %}{{ error }}{% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="col-md-4 mb-3">
+                            <label for="{{ form.passing_score.id_for_label }}" class="form-label">
+                                <i class="fas fa-percentage me-1"></i>Passing Score (%)
+                            </label>
+                            {{ form.passing_score }}
+                            {% if form.passing_score.errors %}
+                                <div class="text-danger small">
+                                    {% for error in form.passing_score.errors %}{{ error }}{% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label">Options</label>
+                            <div class="form-check">
+                                {{ form.show_results_immediately }}
+                                <label class="form-check-label" for="{{ form.show_results_immediately.id_for_label }}">
+                                    <i class="fas fa-eye me-1"></i>Show results immediately
+                                </label>
+                            </div>
+                            <div class="form-check">
+                                {{ form.allow_review }}
+                                <label class="form-check-label" for="{{ form.allow_review.id_for_label }}">
+                                    <i class="fas fa-search me-1"></i>Allow answer review
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Action Buttons -->
+            <div class="card">
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-8">
+                            <div class="d-grid gap-2 d-md-flex">
+                                <button type="submit" name="action" value="save_draft" class="btn btn-secondary" data-loading-text="Saving Draft...">
+                                    <i class="fas fa-save me-2"></i>Save as Draft
+                                </button>
+                                <button type="submit" name="action" value="save_continue" class="btn btn-primary" data-loading-text="Saving...">
+                                    <i class="fas fa-arrow-right me-2"></i>Save & Add Questions
+                                </button>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="text-md-end mt-2 mt-md-0">
+                                <small class="text-muted">
+                                    <i class="fas fa-info-circle me-1"></i>
+                                    You can add questions after creating the exam
+                                </small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Auto-save Status -->
+<div id="save-status" class="position-fixed bottom-0 end-0 p-3" style="z-index: 1050;"></div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Initialize date-time pickers
+    const dateTimeInputs = document.querySelectorAll('input[type="datetime-local"]');
+    dateTimeInputs.forEach(input => {
+        flatpickr(input, {
+            enableTime: true,
+            dateFormat: "Y-m-d H:i",
+            minDate: "today",
+            time_24hr: true
+        });
+    });
+    
+    // Form validation
+    const form = document.getElementById('examForm');
+    form.addEventListener('submit', function(event) {
+        if (!form.checkValidity()) {
+            event.preventDefault();
+            event.stopPropagation();
+            
+            // Scroll to first invalid field
+            const firstInvalid = form.querySelector(':invalid');
+            if (firstInvalid) {
+                firstInvalid.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                firstInvalid.focus();
+            }
+        }
+        
+        form.classList.add('was-validated');
+    });
+    
+    // Auto-save functionality
+    let autoSaveTimeout;
+    const autoSaveInputs = form.querySelectorAll('input, textarea, select');
+    
+    autoSaveInputs.forEach(input => {
+        input.addEventListener('input', function() {
+            clearTimeout(autoSaveTimeout);
+            autoSaveTimeout = setTimeout(() => {
+                autoSaveDraft();
+            }, 5000); // Auto-save after 5 seconds of inactivity
+        });
+    });
+    
+    function autoSaveDraft() {
+        const formData = new FormData(form);
+        formData.append('auto_save', 'true');
+        
+        fetch(form.action, {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                showSaveStatus('Draft saved automatically', 'success');
+            }
+        })
+        .catch(error => {
+            console.error('Auto-save error:', error);
+        });
+    }
+    
+    function showSaveStatus(message, type = 'info') {
+        const statusElement = document.getElementById('save-status');
+        statusElement.innerHTML = `
+            <div class="alert alert-${type} alert-dismissible fade show" role="alert">
+                ${message}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        `;
+        
+        // Auto-hide after 3 seconds
+        setTimeout(() => {
+            const alert = statusElement.querySelector('.alert');
+            if (alert) {
+                const bsAlert = new bootstrap.Alert(alert);
+                bsAlert.close();
+            }
+        }, 3000);
+    }
+    
+    // Real-time validation
+    const examCodeInput = document.getElementById('id_exam_code');
+    if (examCodeInput) {
+        examCodeInput.addEventListener('blur', function() {
+            if (this.value) {
+                // Check if exam code is unique (you can implement this via AJAX)
+                // For now, just basic validation
+                if (!/^[A-Z0-9]+$/.test(this.value)) {
+                    this.setCustomValidity('Exam code should contain only uppercase letters and numbers');
+                } else {
+                    this.setCustomValidity('');
+                }
+            }
+        });
+    }
+    
+    // Duration validation
+    const durationInput = document.getElementById('id_duration_minutes');
+    if (durationInput) {
+        durationInput.addEventListener('input', function() {
+            const duration = parseInt(this.value);
+            if (duration && duration > 480) { // More than 8 hours
+                if (!confirm('This exam duration is longer than 8 hours. Are you sure?')) {
+                    this.value = 180; // Reset to 3 hours
+                }
+            }
+        });
+    }
+    
+    // Timeline validation
+    function validateTimeline() {
+        const regStart = document.getElementById('id_registration_start').value;
+        const regEnd = document.getElementById('id_registration_end').value;
+        const examStart = document.getElementById('id_exam_start').value;
+        const examEnd = document.getElementById('id_exam_end').value;
+        
+        if (regStart && regEnd && regStart >= regEnd) {
+            document.getElementById('id_registration_end').setCustomValidity('Registration end must be after start');
+            return false;
+        }
+        
+        if (examStart && examEnd && examStart >= examEnd) {
+            document.getElementById('id_exam_end').setCustomValidity('Exam end must be after start');
+            return false;
+        }
+        
+        if (regEnd && examStart && regEnd > examStart) {
+            document.getElementById('id_exam_start').setCustomValidity('Exam start must be after registration end');
+            return false;
+        }
+        
+        // Clear custom validity if all checks pass
+        document.getElementById('id_registration_end').setCustomValidity('');
+        document.getElementById('id_exam_end').setCustomValidity('');
+        document.getElementById('id_exam_start').setCustomValidity('');
+        
+        return true;
+    }
+    
+    // Add timeline validation to datetime inputs
+    const datetimeInputs = ['id_registration_start', 'id_registration_end', 'id_exam_start', 'id_exam_end'];
+    datetimeInputs.forEach(inputId => {
+        const input = document.getElementById(inputId);
+        if (input) {
+            input.addEventListener('change', validateTimeline);
+        }
+    });
+});
+</script>
+{% endblock %}

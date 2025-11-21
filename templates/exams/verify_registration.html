@@ -1,0 +1,239 @@
+{% extends 'base.html' %}
+
+{% block title %}Verify Registration - {{ registration.student_name }}{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-10 col-lg-8">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h4 class="mb-0">
+                    <i class="fas fa-user-check me-2"></i>Verify Student Registration
+                </h4>
+            </div>
+            <div class="card-body">
+                <!-- Student Information -->
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h6 class="mb-0"><i class="fas fa-user me-2"></i>Student Information</h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <strong>Name:</strong> {{ registration.student_name }}
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <strong>Phone:</strong> {{ registration.student_phone }}
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <strong>Email:</strong> {{ registration.student_email }}
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <strong>WhatsApp:</strong> {{ registration.student_whatsapp|default:"Not provided" }}
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <strong>School:</strong> {{ registration.student_school }}
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <strong>Class/Grade:</strong> {{ registration.student_class }}
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <strong>Group:</strong> 
+                                <span class="badge bg-secondary">{{ registration.student_group }}</span>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <strong>Registration Date:</strong> {{ registration.registered_at|date:"M d, Y g:i A" }}
+                            </div>
+                        </div>
+                        
+                        {% if registration.student_address %}
+                        <div class="row">
+                            <div class="col-12 mb-3">
+                                <strong>Address:</strong> {{ registration.student_address }}
+                            </div>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Exam Information -->
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h6 class="mb-0"><i class="fas fa-clipboard-list me-2"></i>Exam Information</h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <strong>Exam Title:</strong> {{ registration.exam.title }}
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <strong>Exam Code:</strong> 
+                                <span class="badge bg-primary">{{ registration.exam.exam_code }}</span>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <strong>Exam Date:</strong> {{ registration.exam.exam_start|date:"M d, Y" }}
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <strong>Exam Time:</strong> {{ registration.exam.exam_start|time:"g:i A" }}
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <strong>Duration:</strong> {{ registration.exam.duration }} minutes
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <strong>Current Status:</strong> 
+                                <span class="badge bg-warning">{{ registration.status }}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Verification Actions -->
+                <div class="card">
+                    <div class="card-header">
+                        <h6 class="mb-0"><i class="fas fa-check-circle me-2"></i>Verification Actions</h6>
+                    </div>
+                    <div class="card-body">
+                        <form method="post" id="verificationForm">
+                            {% csrf_token %}
+                            
+                            <!-- Verify Button -->
+                            <div class="d-grid mb-3">
+                                <button type="submit" name="action" value="verify" class="btn btn-success btn-lg">
+                                    <i class="fas fa-check me-2"></i>Verify Registration
+                                </button>
+                            </div>
+                            
+                            <div class="text-center mb-3">
+                                <span class="text-muted">OR</span>
+                            </div>
+                            
+                            <!-- Invalidate Section -->
+                            <div class="mb-3">
+                                <label for="reason" class="form-label">Invalidation Reason (if rejecting):</label>
+                                <textarea class="form-control" id="reason" name="reason" rows="3" placeholder="Please provide a clear reason for invalidating this registration..."></textarea>
+                                <div class="form-text">This reason will be shown to the student.</div>
+                            </div>
+                            
+                            <div class="d-grid">
+                                <button type="submit" name="action" value="invalidate" class="btn btn-danger btn-lg" onclick="return confirmInvalidation()">
+                                    <i class="fas fa-times me-2"></i>Invalidate Registration
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="d-flex justify-content-between mt-4">
+                    <a href="{% url 'manage_exam' registration.exam.id %}" class="btn btn-secondary">
+                        <i class="fas fa-arrow-left me-2"></i>Back to Management
+                    </a>
+                    <a href="{% url 'examiner_dashboard' %}" class="btn btn-outline-primary">
+                        <i class="fas fa-tachometer-alt me-2"></i>Dashboard
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Verification Guidelines -->
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-info-circle me-2"></i>Verification Guidelines</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <div class="d-flex">
+                            <i class="fas fa-check-circle text-success me-3 mt-1"></i>
+                            <div>
+                                <h6>Verify Registration When:</h6>
+                                <ul class="text-muted small">
+                                    <li>All information is complete and accurate</li>
+                                    <li>Student meets exam requirements</li>
+                                    <li>Registration is submitted on time</li>
+                                    <li>No conflicts with exam policies</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-6 mb-3">
+                        <div class="d-flex">
+                            <i class="fas fa-times-circle text-danger me-3 mt-1"></i>
+                            <div>
+                                <h6>Invalidate Registration When:</h6>
+                                <ul class="text-muted small">
+                                    <li>Missing or incorrect information</li>
+                                    <li>Student doesn't meet requirements</li>
+                                    <li>Late registration submission</li>
+                                    <li>Policy violations or conflicts</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .form-control {
+        border-radius: 0.5rem;
+        border: 1px solid #ced4da;
+        padding: 0.75rem;
+    }
+    
+    .form-control:focus {
+        border-color: #3498db;
+        box-shadow: 0 0 0 0.2rem rgba(52, 152, 219, 0.25);
+    }
+    
+    .form-label {
+        font-weight: 600;
+        color: #2c3e50;
+    }
+    
+    .card {
+        box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+    }
+</style>
+
+<script>
+    function confirmInvalidation() {
+        const reason = document.getElementById('reason').value.trim();
+        if (!reason) {
+            alert('Please provide a reason for invalidating this registration.');
+            return false;
+        }
+        
+        return confirm('Are you sure you want to invalidate this registration? This action cannot be undone and the student will be notified.');
+    }
+    
+    // Auto-focus on reason field when invalidate button is clicked
+    document.querySelector('button[value="invalidate"]').addEventListener('click', function() {
+        setTimeout(() => {
+            document.getElementById('reason').focus();
+        }, 100);
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,25 @@
+{% extends 'base.html' %}
+
+{% block title %}View Message{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header bg-light">
+                    <h2>{{ message.subject }}</h2>
+                </div>
+                <div class="card-body">
+                    <p><strong><i class="fas fa-user"></i> From:</strong> {{ message.sender.username }}</p>
+                    <p><strong><i class="fas fa-clock"></i> Sent:</strong> {{ message.sent_at }}</p>
+                    <p><strong><i class="fas fa-envelope"></i> Message:</strong></p>
+                    <p>{{ message.body }}</p>
+                    <a href="{% url 'send_message' %}?reply_to={{ message.sender.id }}" class="btn btn-primary"><i class="fas fa-reply"></i> Reply</a>
+                    <a href="{% url 'inbox' %}" class="btn btn-secondary"><i class="fas fa-arrow-left"></i> Back to Inbox</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

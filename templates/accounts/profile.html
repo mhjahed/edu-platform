@@ -1,0 +1,164 @@
+{% extends 'base/base.html' %}
+{% load static %}
+
+{% block title %}Profile - Final Exam Management System{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+                <h1 class="h2 mb-1">
+                    <i class="fas fa-user me-2"></i>My Profile
+                </h1>
+                <p class="text-muted">View and manage your account information</p>
+            </div>
+            <div>
+                <a href="{% url 'accounts:edit_profile' %}" class="btn btn-primary">
+                    <i class="fas fa-edit me-2"></i>Edit Profile
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-body text-center">
+                {% if profile_user.profile_picture %}
+                    <img src="{{ profile_user.profile_picture.url }}" alt="Profile Picture" class="img-fluid rounded-circle mb-3" style="width: 150px; height: 150px; object-fit: cover;">
+                {% else %}
+                    <div class="bg-secondary rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 150px; height: 150px;">
+                        <i class="fas fa-user fa-4x text-white"></i>
+                    </div>
+                {% endif %}
+                
+                <h4 class="card-title">{{ profile_user.get_full_name|default:profile_user.username }}</h4>
+                <p class="card-text">
+                    <span class="badge bg-{{ profile_user.role|yesno:'primary,success' }} fs-6">
+                        <i class="fas fa-{{ profile_user.is_examiner|yesno:'chalkboard-teacher,user-graduate' }} me-1"></i>
+                        {{ profile_user.get_role_display }}
+                    </span>
+                </p>
+                
+                {% if profile_user.bio %}
+                    <p class="text-muted">{{ profile_user.bio }}</p>
+                {% endif %}
+                
+                <div class="text-muted small">
+                    <i class="fas fa-calendar me-1"></i>
+                    Member since {{ profile_user.date_joined|date:"M Y" }}
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-info-circle me-2"></i>Personal Information
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-sm-6 mb-3">
+                        <strong>Username:</strong>
+                        <p class="mb-0">{{ profile_user.username }}</p>
+                    </div>
+                    <div class="col-sm-6 mb-3">
+                        <strong>Email:</strong>
+                        <p class="mb-0">{{ profile_user.email|default:"Not provided" }}</p>
+                    </div>
+                </div>
+                
+                <div class="row">
+                    <div class="col-sm-6 mb-3">
+                        <strong>First Name:</strong>
+                        <p class="mb-0">{{ profile_user.first_name|default:"Not provided" }}</p>
+                    </div>
+                    <div class="col-sm-6 mb-3">
+                        <strong>Last Name:</strong>
+                        <p class="mb-0">{{ profile_user.last_name|default:"Not provided" }}</p>
+                    </div>
+                </div>
+                
+                <div class="row">
+                    <div class="col-sm-6 mb-3">
+                        <strong>Phone Number:</strong>
+                        <p class="mb-0">{{ profile_user.phone_number|default:"Not provided" }}</p>
+                    </div>
+                    <div class="col-sm-6 mb-3">
+                        <strong>Date of Birth:</strong>
+                        <p class="mb-0">{{ profile_user.date_of_birth|date:"M d, Y"|default:"Not provided" }}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        {% if profile_user.is_examiner %}
+            <div class="card mt-4">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-building me-2"></i>Professional Information
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-sm-6 mb-3">
+                            <strong>Department:</strong>
+                            <p class="mb-0">{{ profile_user.department|default:"Not specified" }}</p>
+                        </div>
+                        <div class="col-sm-6 mb-3">
+                            <strong>Employee ID:</strong>
+                            <p class="mb-0">{{ profile_user.employee_id|default:"Not provided" }}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% elif profile_user.is_candidate %}
+            <div class="card mt-4">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-graduation-cap me-2"></i>Academic Information
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-sm-6 mb-3">
+                            <strong>Institution:</strong>
+                            <p class="mb-0">{{ profile_user.institution|default:"Not specified" }}</p>
+                        </div>
+                        <div class="col-sm-6 mb-3">
+                            <strong>Student ID:</strong>
+                            <p class="mb-0">{{ profile_user.student_id|default:"Not provided" }}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% endif %}
+        
+        <div class="card mt-4">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-cog me-2"></i>Account Actions
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="d-grid gap-2 d-md-block">
+                    <a href="{% url 'accounts:edit_profile' %}" class="btn btn-primary">
+                        <i class="fas fa-edit me-2"></i>Edit Profile
+                    </a>
+                    <a href="{% url 'accounts:password_change' %}" class="btn btn-secondary">
+                        <i class="fas fa-key me-2"></i>Change Password
+                    </a>
+                    <a href="{% url 'accounts:logout' %}" class="btn btn-outline-danger">
+                        <i class="fas fa-sign-out-alt me-2"></i>Logout
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

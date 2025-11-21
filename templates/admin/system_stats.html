@@ -1,0 +1,327 @@
+{% extends "admin/base_site.html" %}
+{% load i18n static %}
+
+{% block title %}System Statistics{% endblock %}
+
+{% block extrahead %}
+{{ block.super }}
+<style>
+    .stats-container {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 30px;
+        margin-bottom: 30px;
+    }
+    
+    .stats-section {
+        background: white;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        padding: 25px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    
+    .section-header {
+        font-size: 1.4em;
+        font-weight: bold;
+        margin-bottom: 20px;
+        padding-bottom: 10px;
+        border-bottom: 2px solid #007cba;
+        color: #007cba;
+    }
+    
+    .stat-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 12px 0;
+        border-bottom: 1px solid #eee;
+    }
+    
+    .stat-item:last-child {
+        border-bottom: none;
+    }
+    
+    .stat-label {
+        font-weight: 500;
+        color: #333;
+    }
+    
+    .stat-value {
+        font-weight: bold;
+        font-size: 1.1em;
+        color: #007cba;
+    }
+    
+    .stat-percentage {
+        font-size: 0.9em;
+        color: #666;
+        margin-left: 10px;
+    }
+    
+    .progress-bar {
+        width: 100%;
+        height: 8px;
+        background: #e9ecef;
+        border-radius: 4px;
+        overflow: hidden;
+        margin-top: 5px;
+    }
+    
+    .progress-fill {
+        height: 100%;
+        background: linear-gradient(90deg, #007cba, #0056b3);
+        transition: width 0.3s ease;
+    }
+    
+    .chart-container {
+        background: white;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        padding: 25px;
+        margin-top: 30px;
+    }
+    
+    .chart-title {
+        font-size: 1.3em;
+        font-weight: bold;
+        margin-bottom: 20px;
+        color: #007cba;
+    }
+    
+    .chart-placeholder {
+        height: 300px;
+        background: #f8f9fa;
+        border: 2px dashed #dee2e6;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #6c757d;
+        font-style: italic;
+    }
+    
+    .export-actions {
+        margin-top: 30px;
+        padding: 20px;
+        background: #f8f9fa;
+        border-radius: 8px;
+        text-align: center;
+    }
+    
+    .export-btn {
+        display: inline-block;
+        padding: 12px 24px;
+        margin: 0 10px;
+        background: #007cba;
+        color: white;
+        text-decoration: none;
+        border-radius: 4px;
+        transition: background 0.2s ease;
+    }
+    
+    .export-btn:hover {
+        background: #005a87;
+        color: white;
+    }
+    
+    .export-btn.secondary {
+        background: #6c757d;
+    }
+    
+    .export-btn.secondary:hover {
+        background: #545b62;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="system-stats">
+    <h1>📈 System Statistics & Analytics</h1>
+    <p class="lead">Comprehensive overview of system usage, performance, and key metrics.</p>
+    
+    <!-- Statistics Grid -->
+    <div class="stats-container">
+        <!-- User Statistics -->
+        <div class="stats-section">
+            <div class="section-header">👥 User Statistics</div>
+            <div class="stat-item">
+                <span class="stat-label">Total Users</span>
+                <span class="stat-value">{{ stats.users.total }}</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-label">Examiners</span>
+                <span class="stat-value">{{ stats.users.examiners }}</span>
+                <span class="stat-percentage">
+                    ({% widthratio stats.users.examiners stats.users.total 100 %}%)
+                </span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-label">Students</span>
+                <span class="stat-value">{{ stats.users.students }}</span>
+                <span class="stat-percentage">
+                    ({% widthratio stats.users.students stats.users.total 100 %}%)
+                </span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-label">Active Users</span>
+                <span class="stat-value">{{ stats.users.active }}</span>
+                <span class="stat-percentage">
+                    ({% widthratio stats.users.active stats.users.total 100 %}%)
+                </span>
+            </div>
+            <div class="progress-bar">
+                <div class="progress-fill" style="width: {% widthratio stats.users.active stats.users.total 100 %}%"></div>
+            </div>
+        </div>
+        
+        <!-- Exam Statistics -->
+        <div class="stats-section">
+            <div class="section-header">📝 Exam Statistics</div>
+            <div class="stat-item">
+                <span class="stat-label">Total Exams</span>
+                <span class="stat-value">{{ stats.exams.total }}</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-label">This Month</span>
+                <span class="stat-value">{{ stats.exams.this_month }}</span>
+            </div>
+            {% for type_stat in stats.exams.by_type %}
+            <div class="stat-item">
+                <span class="stat-label">{{ type_stat.examiner_profession|default:"General" }}</span>
+                <span class="stat-value">{{ type_stat.count }}</span>
+            </div>
+            {% endfor %}
+        </div>
+        
+        <!-- Registration Statistics -->
+        <div class="stats-section">
+            <div class="section-header">📋 Registration Statistics</div>
+            <div class="stat-item">
+                <span class="stat-label">Total Registrations</span>
+                <span class="stat-value">{{ stats.registrations.total }}</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-label">Verified</span>
+                <span class="stat-value">{{ stats.registrations.verified }}</span>
+                <span class="stat-percentage">
+                    ({% widthratio stats.registrations.verified stats.registrations.total 100 %}%)
+                </span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-label">Pending</span>
+                <span class="stat-value">{{ stats.registrations.pending }}</span>
+                <span class="stat-percentage">
+                    ({% widthratio stats.registrations.pending stats.registrations.total 100 %}%)
+                </span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-label">Invalid</span>
+                <span class="stat-value">{{ stats.registrations.invalid }}</span>
+                <span class="stat-percentage">
+                    ({% widthratio stats.registrations.invalid stats.registrations.total 100 %}%)
+                </span>
+            </div>
+        </div>
+        
+        <!-- Results Statistics -->
+        <div class="stats-section">
+            <div class="section-header">📊 Results Statistics</div>
+            <div class="stat-item">
+                <span class="stat-label">Total Results</span>
+                <span class="stat-value">{{ stats.results.total }}</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-label">Passed</span>
+                <span class="stat-value">{{ stats.results.passed }}</span>
+                <span class="stat-percentage">
+                    ({% widthratio stats.results.passed stats.results.total 100 %}%)
+                </span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-label">Failed</span>
+                <span class="stat-value">{{ stats.results.failed }}</span>
+                <span class="stat-percentage">
+                    ({% widthratio stats.results.failed stats.results.total 100 %}%)
+                </span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-label">Average Score</span>
+                <span class="stat-value">{{ stats.results.average_score|floatformat:1 }}%</span>
+            </div>
+        </div>
+        
+        <!-- Request Statistics -->
+        <div class="stats-section">
+            <div class="section-header">📧 Request Statistics</div>
+            <div class="stat-item">
+                <span class="stat-label">Total Requests</span>
+                <span class="stat-value">{{ stats.requests.total }}</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-label">Pending</span>
+                <span class="stat-value">{{ stats.requests.pending }}</span>
+                <span class="stat-percentage">
+                    ({% widthratio stats.requests.pending stats.requests.total 100 %}%)
+                </span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-label">Replied</span>
+                <span class="stat-value">{{ stats.requests.replied }}</span>
+                <span class="stat-percentage">
+                    ({% widthratio stats.requests.replied stats.requests.total 100 %}%)
+                </span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-label">Resolved</span>
+                <span class="stat-value">{{ stats.requests.resolved }}</span>
+                <span class="stat-percentage">
+                    ({% widthratio stats.requests.resolved stats.requests.total 100 %}%)
+                </span>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Charts Section -->
+    <div class="chart-container">
+        <div class="chart-title">📈 Performance Trends</div>
+        <div class="chart-placeholder">
+            📊 Chart visualization would be implemented here with Chart.js or similar library
+            <br>
+            <small>This would show trends over time for registrations, exam completions, and user activity</small>
+        </div>
+    </div>
+    
+    <!-- Export Actions -->
+    <div class="export-actions">
+        <h3>📤 Export & Reports</h3>
+        <p>Generate detailed reports and export data for analysis</p>
+        <a href="#" class="export-btn">📊 Export User Report</a>
+        <a href="#" class="export-btn">📝 Export Exam Report</a>
+        <a href="#" class="export-btn">📋 Export Registration Report</a>
+        <a href="#" class="export-btn secondary">📈 Export Results Report</a>
+        <a href="#" class="export-btn secondary">📧 Export Requests Report</a>
+    </div>
+    
+    <!-- System Information -->
+    <div class="stats-section" style="margin-top: 30px;">
+        <div class="section-header">⚙️ System Information</div>
+        <div class="stat-item">
+            <span class="stat-label">Django Version</span>
+            <span class="stat-value">5.2.6</span>
+        </div>
+        <div class="stat-item">
+            <span class="stat-label">Python Version</span>
+            <span class="stat-value">3.12+</span>
+        </div>
+        <div class="stat-item">
+            <span class="stat-label">Database</span>
+            <span class="stat-value">SQLite (Development)</span>
+        </div>
+        <div class="stat-item">
+            <span class="stat-label">Last Updated</span>
+            <span class="stat-value">{% now "M d, Y g:i A" %}</span>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Exam Results - {{ exam.title }}</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: white;
+            color: black;
+        }
+        
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 2px solid #000;
+            padding-bottom: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .institute-info {
+            text-align: left;
+        }
+        
+        .contact-info {
+            text-align: right;
+        }
+        
+        .logo {
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        
+        .title {
+            text-align: center;
+            font-size: 28px;
+            font-weight: bold;
+            margin: 30px 0;
+            text-decoration: underline;
+        }
+        
+        .exam-info {
+            margin: 20px 0;
+            padding: 15px;
+            border: 1px solid #000;
+            border-radius: 5px;
+        }
+        
+        .results-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+        
+        .results-table th,
+        .results-table td {
+            border: 1px solid #000;
+            padding: 8px;
+            text-align: left;
+        }
+        
+        .results-table th {
+            background-color: #f0f0f0;
+            font-weight: bold;
+        }
+        
+        .results-table tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+        
+        .grade-excellent { color: #28a745; font-weight: bold; }
+        .grade-good { color: #17a2b8; font-weight: bold; }
+        .grade-satisfactory { color: #ffc107; font-weight: bold; }
+        .grade-fail { color: #dc3545; font-weight: bold; }
+        
+        .summary {
+            margin: 30px 0;
+            padding: 20px;
+            border: 2px solid #000;
+            border-radius: 5px;
+        }
+        
+        .summary-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+        }
+        
+        .signature-section {
+            margin-top: 50px;
+            display: flex;
+            justify-content: space-between;
+        }
+        
+        .signature-box {
+            width: 200px;
+            text-align: center;
+        }
+        
+        .signature-line {
+            border-bottom: 1px solid #000;
+            height: 40px;
+            margin-bottom: 5px;
+        }
+        
+        .footer {
+            margin-top: 50px;
+            text-align: center;
+            font-size: 12px;
+            color: #666;
+        }
+        
+        @media print {
+            body {
+                margin: 0;
+                padding: 15px;
+            }
+            
+            .no-print {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="institute-info">
+            <div class="logo">Institute Name</div>
+            <div>Website: www.institute.edu</div>
+        </div>
+        <div class="contact-info">
+            <div>Email: info@institute.edu</div>
+            <div>Phone: +1 (555) 123-4567</div>
+        </div>
+    </div>
+    
+    <div class="title">Exam Results Report</div>
+    
+    <div class="exam-info">
+        <div class="row">
+            <div class="col-6">
+                <strong>Exam Title:</strong> {{ exam.title }}<br>
+                <strong>Exam Code:</strong> {{ exam.exam_code }}<br>
+                <strong>Duration:</strong> {{ exam.duration }} minutes
+            </div>
+            <div class="col-6">
+                <strong>Exam Date:</strong> {{ exam.exam_start|date:"M d, Y" }}<br>
+                <strong>Exam Time:</strong> {{ exam.exam_start|time:"g:i A" }}<br>
+                <strong>Examiner:</strong> {{ exam.examiner_name }}
+            </div>
+        </div>
+    </div>
+    
+    <table class="results-table">
+        <thead>
+            <tr>
+                <th>#</th>
+                <th>Student Name</th>
+                <th>School</th>
+                <th>Class</th>
+                <th>Group</th>
+                <th>Score</th>
+                <th>Grade</th>
+                <th>Status</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for result in results %}
+            <tr>
+                <td>{{ forloop.counter }}</td>
+                <td>{{ result.registration.student_name }}</td>
+                <td>{{ result.registration.student_school }}</td>
+                <td>{{ result.registration.student_class }}</td>
+                <td>{{ result.registration.student_group }}</td>
+                <td>{{ result.score }}</td>
+                <td class="{% if result.score >= 80 %}grade-excellent{% elif result.score >= 60 %}grade-good{% elif result.score >= 50 %}grade-satisfactory{% else %}grade-fail{% endif %}">
+                    {% if result.score >= 80 %}
+                        A+ (Excellent)
+                    {% elif result.score >= 70 %}
+                        A (Very Good)
+                    {% elif result.score >= 60 %}
+                        B (Good)
+                    {% elif result.score >= 50 %}
+                        C (Satisfactory)
+                    {% else %}
+                        F (Fail)
+                    {% endif %}
+                </td>
+                <td>
+                    {% if result.score >= 50 %}
+                        <span style="color: #28a745; font-weight: bold;">PASS</span>
+                    {% else %}
+                        <span style="color: #dc3545; font-weight: bold;">FAIL</span>
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    
+    <div class="summary">
+        <h4>Exam Summary</h4>
+        <div class="summary-row">
+            <span><strong>Total Students:</strong></span>
+            <span>{{ results.count }}</span>
+        </div>
+        <div class="summary-row">
+            <span><strong>Passed:</strong></span>
+            <span>{{ results|length }}</span>
+        </div>
+        <div class="summary-row">
+            <span><strong>Failed:</strong></span>
+            <span>{{ results|length }}</span>
+        </div>
+        <div class="summary-row">
+            <span><strong>Pass Rate:</strong></span>
+            <span>{% widthratio results|length 1 1 %}%</span>
+        </div>
+        <div class="summary-row">
+            <span><strong>Average Score:</strong></span>
+            <span>{% for result in results %}{{ result.score|add:0 }}{% if not forloop.last %}+{% endif %}{% endfor %}</span>
+        </div>
+        <div class="summary-row">
+            <span><strong>Highest Score:</strong></span>
+            <span>{% for result in results %}{{ result.score|add:0 }}{% if not forloop.last %}+{% endif %}{% endfor %}</span>
+        </div>
+        <div class="summary-row">
+            <span><strong>Lowest Score:</strong></span>
+            <span>{% for result in results %}{{ result.score|add:0 }}{% if not forloop.last %}+{% endif %}{% endfor %}</span>
+        </div>
+    </div>
+    
+    <div class="signature-section">
+        <div class="signature-box">
+            <div class="signature-line"></div>
+            <div>Examiner Signature</div>
+        </div>
+        <div class="signature-box">
+            <div class="signature-line"></div>
+            <div>Date</div>
+        </div>
+    </div>
+    
+    <div class="footer">
+        <p>This is an official exam results report generated by the Exam Management System.</p>
+        <p>Generated on: {% now "M d, Y \a\t g:i A" %}</p>
+        <p>For any queries, contact: {{ exam.contact_email|default:"info@institute.edu" }}</p>
+    </div>
+</body>
+</html>

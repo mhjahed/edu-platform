@@ -1,0 +1,248 @@
+{% extends 'base.html' %}
+
+{% block title %}Exam Requests - {{ exam.title }}{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2><i class="fas fa-envelope me-2"></i>Requests for {{ exam.title }}</h2>
+            <div>
+                <a href="{% url 'manage_exam' exam.id %}" class="btn btn-outline-primary me-2">
+                    <i class="fas fa-arrow-left me-1"></i>Back to Management
+                </a>
+                <a href="{% url 'examiner_dashboard' %}" class="btn btn-secondary">
+                    <i class="fas fa-tachometer-alt me-1"></i>Dashboard
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Request Statistics -->
+<div class="row mb-4">
+    <div class="col-md-3 mb-3">
+        <div class="card bg-primary text-white">
+            <div class="card-body text-center">
+                <h4 class="mb-0">{{ requests.count }}</h4>
+                <p class="mb-0">Total Requests</p>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3 mb-3">
+        <div class="card bg-warning text-white">
+            <div class="card-body text-center">
+                <h4 class="mb-0">{{ requests|length }}</h4>
+                <p class="mb-0">Pending</p>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3 mb-3">
+        <div class="card bg-success text-white">
+            <div class="card-body text-center">
+                <h4 class="mb-0">{{ requests|length }}</h4>
+                <p class="mb-0">Replied</p>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3 mb-3">
+        <div class="card bg-info text-white">
+            <div class="card-body text-center">
+                <h4 class="mb-0">{{ requests|length }}</h4>
+                <p class="mb-0">Resolved</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Requests List -->
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-list me-2"></i>Student Requests</h5>
+            </div>
+            <div class="card-body">
+                {% if requests %}
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Student</th>
+                                    <th>Subject</th>
+                                    <th>Message</th>
+                                    <th>Date</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for request in requests %}
+                                <tr>
+                                    <td>
+                                        <strong>{{ request.student.first_name|default:request.student.username }}</strong>
+                                        <br><small class="text-muted">{{ request.student.email }}</small>
+                                    </td>
+                                    <td>
+                                        <strong>{{ request.subject }}</strong>
+                                    </td>
+                                    <td>
+                                        <span class="text-truncate d-inline-block" style="max-width: 200px;" title="{{ request.message }}">
+                                            {{ request.message|truncatechars:100 }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <small>{{ request.created_at|date:"M d, Y" }}</small>
+                                        <br><small class="text-muted">{{ request.created_at|time:"g:i A" }}</small>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-{% if request.status == 'pending' %}warning{% elif request.status == 'replied' %}success{% else %}info{% endif %}">
+                                            {{ request.status|title }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <div class="btn-group" role="group">
+                                            <a href="{% url 'reply_to_request' request.id %}" class="btn btn-sm btn-outline-primary">
+                                                <i class="fas fa-reply me-1"></i>Reply
+                                            </a>
+                                            <button class="btn btn-sm btn-outline-info" onclick="viewRequest({{ request.id }})">
+                                                <i class="fas fa-eye me-1"></i>View
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <div class="text-center py-5">
+                        <i class="fas fa-envelope fa-3x text-muted mb-3"></i>
+                        <h5 class="text-muted">No requests yet</h5>
+                        <p class="text-muted">Students haven't submitted any requests for this exam.</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Request Details Modal -->
+<div class="modal fade" id="requestModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Request Details</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" id="requestModalBody">
+                <!-- Content will be loaded here -->
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <a href="#" class="btn btn-primary" id="replyButton">
+                    <i class="fas fa-reply me-1"></i>Reply
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Quick Reply Modal -->
+<div class="modal fade" id="quickReplyModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Quick Reply</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form id="quickReplyForm">
+                {% csrf_token %}
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">Reply Message</label>
+                        <textarea class="form-control" id="quickReplyMessage" rows="4" placeholder="Type your reply here..."></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Send Reply</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    let currentRequestId = null;
+    
+    function viewRequest(requestId) {
+        currentRequestId = requestId;
+        // In a real implementation, you would fetch the request details via AJAX
+        // For now, we'll show a placeholder
+        document.getElementById('requestModalBody').innerHTML = `
+            <div class="mb-3">
+                <h6>Request Subject:</h6>
+                <p id="requestSubject">Loading...</p>
+            </div>
+            <div class="mb-3">
+                <h6>Student Message:</h6>
+                <p id="requestMessage">Loading...</p>
+            </div>
+            <div class="mb-3">
+                <h6>Submitted:</h6>
+                <p id="requestDate">Loading...</p>
+            </div>
+            <div id="replySection" style="display: none;">
+                <h6>Your Reply:</h6>
+                <p id="requestReply">No reply yet.</p>
+            </div>
+        `;
+        
+        document.getElementById('replyButton').href = `/exams/examiner/request/${requestId}/reply/`;
+        
+        // Show the modal
+        new bootstrap.Modal(document.getElementById('requestModal')).show();
+        
+        // Simulate loading request details
+        setTimeout(() => {
+            document.getElementById('requestSubject').textContent = 'Sample Request Subject';
+            document.getElementById('requestMessage').textContent = 'This is a sample student request message.';
+            document.getElementById('requestDate').textContent = new Date().toLocaleDateString();
+        }, 500);
+    }
+    
+    function quickReply(requestId) {
+        currentRequestId = requestId;
+        new bootstrap.Modal(document.getElementById('quickReplyModal')).show();
+    }
+    
+    // Handle quick reply form submission
+    document.getElementById('quickReplyForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        const message = document.getElementById('quickReplyMessage').value;
+        if (!message.trim()) {
+            alert('Please enter a reply message.');
+            return;
+        }
+        
+        // In a real implementation, you would send this via AJAX
+        alert('Reply sent successfully!');
+        
+        // Close modal and reset form
+        bootstrap.Modal.getInstance(document.getElementById('quickReplyModal')).hide();
+        document.getElementById('quickReplyMessage').value = '';
+    });
+    
+    // Auto-refresh requests every 30 seconds
+    setInterval(function() {
+        // You can add AJAX call here to refresh the requests list
+    }, 30000);
+</script>
+{% endblock %}

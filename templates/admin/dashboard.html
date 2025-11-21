@@ -1,0 +1,283 @@
+{% extends "admin/base_site.html" %}
+{% load i18n static %}
+
+{% block title %}System Dashboard{% endblock %}
+
+{% block extrahead %}
+{{ block.super }}
+<style>
+    .dashboard-stats {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 20px;
+        margin-bottom: 30px;
+    }
+    
+    .stat-card {
+        background: white;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        padding: 20px;
+        text-align: center;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        transition: transform 0.2s ease;
+    }
+    
+    .stat-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+    }
+    
+    .stat-number {
+        font-size: 2.5em;
+        font-weight: bold;
+        margin-bottom: 10px;
+    }
+    
+    .stat-label {
+        color: #666;
+        font-size: 1.1em;
+    }
+    
+    .stat-card.exams { border-left: 4px solid #007cba; }
+    .stat-card.registrations { border-left: 4px solid #28a745; }
+    .stat-card.users { border-left: 4px solid #ffc107; }
+    .stat-card.results { border-left: 4px solid #dc3545; }
+    
+    .dashboard-sections {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 30px;
+        margin-top: 30px;
+    }
+    
+    .dashboard-section {
+        background: white;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        padding: 20px;
+    }
+    
+    .section-title {
+        font-size: 1.3em;
+        font-weight: bold;
+        margin-bottom: 15px;
+        padding-bottom: 10px;
+        border-bottom: 2px solid #007cba;
+    }
+    
+    .activity-item {
+        padding: 10px 0;
+        border-bottom: 1px solid #eee;
+    }
+    
+    .activity-item:last-child {
+        border-bottom: none;
+    }
+    
+    .activity-time {
+        color: #666;
+        font-size: 0.9em;
+    }
+    
+    .status-badge {
+        padding: 4px 8px;
+        border-radius: 4px;
+        font-size: 0.8em;
+        font-weight: bold;
+    }
+    
+    .status-active { background: #d4edda; color: #155724; }
+    .status-pending { background: #fff3cd; color: #856404; }
+    .status-completed { background: #d1ecf1; color: #0c5460; }
+    
+    .quick-actions {
+        margin-top: 30px;
+        padding: 20px;
+        background: #f8f9fa;
+        border-radius: 8px;
+    }
+    
+    .quick-actions h3 {
+        margin-bottom: 15px;
+        color: #007cba;
+    }
+    
+    .action-buttons {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+    }
+    
+    .action-btn {
+        padding: 10px 20px;
+        background: #007cba;
+        color: white;
+        text-decoration: none;
+        border-radius: 4px;
+        transition: background 0.2s ease;
+    }
+    
+    .action-btn:hover {
+        background: #005a87;
+        color: white;
+    }
+    
+    .action-btn.secondary {
+        background: #6c757d;
+    }
+    
+    .action-btn.secondary:hover {
+        background: #545b62;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="dashboard">
+    <h1>🎓 Exam Management System Dashboard</h1>
+    <p class="lead">Welcome to the comprehensive administration panel. Monitor and manage all aspects of your exam system.</p>
+    
+    <!-- Statistics Cards -->
+    <div class="dashboard-stats">
+        <div class="stat-card exams">
+            <div class="stat-number" style="color: #007cba;">{{ total_exams }}</div>
+            <div class="stat-label">Total Exams</div>
+            <small>Active: {{ active_exams }} | Upcoming: {{ upcoming_exams }}</small>
+        </div>
+        
+        <div class="stat-card registrations">
+            <div class="stat-number" style="color: #28a745;">{{ total_registrations }}</div>
+            <div class="stat-label">Total Registrations</div>
+            <small>Pending: {{ pending_registrations }}</small>
+        </div>
+        
+        <div class="stat-card users">
+            <div class="stat-number" style="color: #ffc107;">{{ total_students }}</div>
+            <div class="stat-label">Students</div>
+            <small>Examiners: {{ total_examiners }}</small>
+        </div>
+        
+        <div class="stat-card results">
+            <div class="stat-number" style="color: #dc3545;">{{ total_results }}</div>
+            <div class="stat-label">Exam Results</div>
+            <small>Pending Requests: {{ pending_requests }}</small>
+        </div>
+    </div>
+    
+    <!-- Quick Actions -->
+    <div class="quick-actions">
+        <h3>🚀 Quick Actions</h3>
+        <div class="action-buttons">
+            <a href="{% url 'admin:exams_exam_add' %}" class="action-btn">➕ Create New Exam</a>
+            <a href="{% url 'admin:exams_registration_changelist' %}?status__exact=Pending%20Verification" class="action-btn secondary">⏳ Review Pending Registrations</a>
+            <a href="{% url 'admin:messaging_request_changelist' %}?status__exact=pending" class="action-btn secondary">📧 Handle Student Requests</a>
+            <a href="{% url 'admin:exams_result_changelist' %}" class="action-btn secondary">📊 View All Results</a>
+            <a href="{% url 'admin:users_user_changelist' %}" class="action-btn secondary">👥 Manage Users</a>
+            <a href="{% url 'admin:system_stats' %}" class="action-btn secondary">📈 System Statistics</a>
+        </div>
+    </div>
+    
+    <!-- Dashboard Sections -->
+    <div class="dashboard-sections">
+        <!-- Recent Exams -->
+        <div class="dashboard-section">
+            <div class="section-title">📝 Recent Exams</div>
+            {% for exam in recent_exams %}
+            <div class="activity-item">
+                <strong>{{ exam.title }}</strong>
+                <br>
+                <small class="activity-time">
+                    Created: {{ exam.created_at|date:"M d, Y g:i A" }}
+                    | Code: {{ exam.exam_code }}
+                </small>
+                <br>
+                <span class="status-badge 
+                    {% if exam.exam_end > now and exam.exam_start <= now %}status-active
+                    {% elif exam.exam_start > now %}status-pending
+                    {% else %}status-completed{% endif %}">
+                    {% if exam.exam_end > now and exam.exam_start <= now %}Active
+                    {% elif exam.exam_start > now %}Upcoming
+                    {% else %}Completed{% endif %}
+                </span>
+            </div>
+            {% empty %}
+            <p class="text-muted">No exams created yet.</p>
+            {% endfor %}
+        </div>
+        
+        <!-- Recent Registrations -->
+        <div class="dashboard-section">
+            <div class="section-title">📋 Recent Registrations</div>
+            {% for registration in recent_registrations %}
+            <div class="activity-item">
+                <strong>{{ registration.student_name }}</strong>
+                <br>
+                <small class="activity-time">
+                    {{ registration.registration_date|date:"M d, Y g:i A" }}
+                    | {{ registration.exam.title }}
+                </small>
+                <br>
+                <span class="status-badge 
+                    {% if registration.status == 'Ready for Exam' %}status-active
+                    {% elif registration.status == 'Pending Verification' %}status-pending
+                    {% else %}status-completed{% endif %}">
+                    {{ registration.status }}
+                </span>
+            </div>
+            {% empty %}
+            <p class="text-muted">No registrations yet.</p>
+            {% endfor %}
+        </div>
+    </div>
+    
+    <!-- Exam Status Overview -->
+    <div class="dashboard-section" style="margin-top: 30px;">
+        <div class="section-title">📊 Exam Status Overview</div>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px;">
+            <div class="stat-card">
+                <div class="stat-number" style="color: #28a745;">{{ exam_status.open_registration }}</div>
+                <div class="stat-label">Open for Registration</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" style="color: #007cba;">{{ exam_status.in_progress }}</div>
+                <div class="stat-label">Currently Active</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" style="color: #6c757d;">{{ exam_status.completed }}</div>
+                <div class="stat-label">Completed</div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Recent Requests -->
+    {% if recent_requests %}
+    <div class="dashboard-section" style="margin-top: 30px;">
+        <div class="section-title">📧 Recent Student Requests</div>
+        {% for request in recent_requests %}
+        <div class="activity-item">
+            <strong>{{ request.subject }}</strong>
+            <br>
+            <small class="activity-time">
+                {{ request.created_at|date:"M d, Y g:i A" }}
+                | {{ request.student.username }} | {{ request.exam.title }}
+            </small>
+            <br>
+            <span class="status-badge 
+                {% if request.status == 'pending' %}status-pending
+                {% elif request.status == 'replied' %}status-active
+                {% else %}status-completed{% endif %}">
+                {{ request.status|title }}
+            </span>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+    
+    <div style="margin-top: 40px; padding: 20px; background: #e9ecef; border-radius: 8px; text-align: center;">
+        <h4>🕒 Current System Time</h4>
+        <p style="font-size: 1.2em; font-weight: bold;">{{ now|date:"F d, Y g:i A T" }}</p>
+        <small>All times are displayed in your local timezone</small>
+    </div>
+</div>
+{% endblock %}

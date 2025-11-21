@@ -1,0 +1,218 @@
+{% extends 'base.html' %}
+
+{% block title %}Reply to Request - {{ request.subject }}{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-10 col-lg-8">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h4 class="mb-0">
+                    <i class="fas fa-reply me-2"></i>Reply to Student Request
+                </h4>
+            </div>
+            <div class="card-body">
+                <!-- Student Request Details -->
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h6 class="mb-0"><i class="fas fa-envelope me-2"></i>Student Request</h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <strong>Student:</strong> {{ request.student.first_name|default:request.student.username }}
+                            </div>
+                            <div class="col-md-6">
+                                <strong>Email:</strong> {{ request.student.email }}
+                            </div>
+                        </div>
+                        
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <strong>Subject:</strong> {{ request.subject }}
+                            </div>
+                            <div class="col-md-6">
+                                <strong>Date:</strong> {{ request.created_at|date:"M d, Y g:i A" }}
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <strong>Message:</strong>
+                            <div class="alert alert-light mt-2">
+                                {{ request.message|linebreaks }}
+                            </div>
+                        </div>
+                        
+                        {% if request.exam %}
+                        <div class="mb-3">
+                            <strong>Related Exam:</strong> {{ request.exam.title }}
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Reply Form -->
+                <form method="post">
+                    {% csrf_token %}
+                    
+                    <div class="mb-3">
+                        <label for="reply" class="form-label">Your Reply *</label>
+                        <textarea class="form-control" id="reply" name="reply" rows="6" placeholder="Type your reply to the student here..." required></textarea>
+                        <div class="form-text">Provide a helpful and professional response to the student's request.</div>
+                    </div>
+                    
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle me-2"></i>
+                        <strong>Note:</strong> Your reply will be sent to the student and they will be notified of your response.
+                    </div>
+                    
+                    <div class="d-flex justify-content-between">
+                        <a href="{% url 'exam_requests' request.exam.id %}" class="btn btn-secondary">
+                            <i class="fas fa-arrow-left me-2"></i>Back to Requests
+                        </a>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-paper-plane me-2"></i>Send Reply
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Quick Reply Templates -->
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-lightbulb me-2"></i>Quick Reply Templates</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-4 mb-3">
+                        <div class="card h-100">
+                            <div class="card-body">
+                                <h6 class="card-title">General Information</h6>
+                                <p class="card-text small">For general questions about exam procedures or requirements.</p>
+                                <button class="btn btn-sm btn-outline-primary" onclick="useTemplate('general')">
+                                    Use Template
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-4 mb-3">
+                        <div class="card h-100">
+                            <div class="card-body">
+                                <h6 class="card-title">Technical Support</h6>
+                                <p class="card-text small">For technical issues during registration or exam taking.</p>
+                                <button class="btn btn-sm btn-outline-primary" onclick="useTemplate('technical')">
+                                    Use Template
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-4 mb-3">
+                        <div class="card h-100">
+                            <div class="card-body">
+                                <h6 class="card-title">Schedule Change</h6>
+                                <p class="card-text small">For requests related to exam timing or schedule conflicts.</p>
+                                <button class="btn btn-sm btn-outline-primary" onclick="useTemplate('schedule')">
+                                    Use Template
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .form-control {
+        border-radius: 0.5rem;
+        border: 1px solid #ced4da;
+        padding: 0.75rem;
+    }
+    
+    .form-control:focus {
+        border-color: #3498db;
+        box-shadow: 0 0 0 0.2rem rgba(52, 152, 219, 0.25);
+    }
+    
+    .form-label {
+        font-weight: 600;
+        color: #2c3e50;
+    }
+    
+    .alert {
+        border-radius: 0.5rem;
+    }
+</style>
+
+<script>
+    const templates = {
+        general: `Dear Student,
+
+Thank you for your inquiry. I'm happy to help you with your question about the exam.
+
+For general information about exam procedures, please note the following:
+- Make sure to register before the deadline
+- Bring a valid ID on exam day
+- Arrive 15 minutes early
+- Follow all exam instructions carefully
+
+If you have any other questions, please don't hesitate to ask.
+
+Best regards,
+{{ user.first_name|default:user.username }}`,
+        
+        technical: `Dear Student,
+
+I understand you're experiencing technical difficulties. Let me help you resolve this issue.
+
+Please try the following troubleshooting steps:
+1. Clear your browser cache and cookies
+2. Try using a different browser
+3. Check your internet connection
+4. Disable any browser extensions
+
+If the problem persists, please provide more details about:
+- What exactly happened
+- What browser you're using
+- Any error messages you see
+
+I'll do my best to help you resolve this quickly.
+
+Best regards,
+{{ user.first_name|default:user.username }}`,
+        
+        schedule: `Dear Student,
+
+Thank you for contacting me about your exam schedule.
+
+I understand you have concerns about the exam timing. Please note that:
+- Exam schedules are set to accommodate all students
+- Changes can only be made in exceptional circumstances
+- You must provide valid reasons for any schedule change requests
+
+If you have a legitimate conflict, please provide:
+- Detailed explanation of the conflict
+- Supporting documentation if applicable
+- Your preferred alternative time (if any)
+
+I'll review your request and get back to you as soon as possible.
+
+Best regards,
+{{ user.first_name|default:user.username }}`
+    };
+    
+    function useTemplate(templateType) {
+        const replyTextarea = document.getElementById('reply');
+        replyTextarea.value = templates[templateType];
+        replyTextarea.focus();
+    }
+</script>
+{% endblock %}

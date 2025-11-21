@@ -1,0 +1,403 @@
+{% extends 'base.html' %}
+
+{% block title %}Take Exam - {{ exam.title }}{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2><i class="fas fa-pencil-alt me-2"></i>{{ exam.title }}</h2>
+            <div class="d-flex align-items-center">
+                <div class="me-3">
+                    <span class="badge bg-primary fs-6" id="timer">Time: {{ exam.duration }}:00</span>
+                </div>
+                <button class="btn btn-outline-danger" onclick="submitExam()">
+                    <i class="fas fa-stop me-2"></i>Submit Exam
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Exam Instructions -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="alert alert-info">
+            <h6><i class="fas fa-info-circle me-2"></i>Exam Instructions</h6>
+            <ul class="mb-0">
+                <li>You have <strong>{{ exam.duration }} minutes</strong> to complete this exam.</li>
+                <li>Answer all questions to the best of your ability.</li>
+                <li>You can navigate between questions using the navigation buttons.</li>
+                <li>Make sure to submit your exam before time expires.</li>
+                <li>Do not refresh the page or navigate away during the exam.</li>
+            </ul>
+        </div>
+    </div>
+</div>
+
+<!-- Exam Form -->
+<form method="post" id="examForm">
+    {% csrf_token %}
+    
+    <div class="row">
+        <div class="col-md-8">
+            <!-- Questions -->
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">Questions</h5>
+                </div>
+                <div class="card-body">
+                    {% for question in questions %}
+                    <div class="question-container mb-4" id="question-{{ question.id }}" style="{% if not forloop.first %}display: none;{% endif %}">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h6>Question {{ forloop.counter }}</h6>
+                            <span class="badge bg-{% if question.question_type == 'MCQ' %}primary{% elif question.question_type == 'Short Answer' %}info{% else %}warning{% endif %}">
+                                {{ question.question_type }}
+                            </span>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <p class="fw-bold">{{ question.question_text }}</p>
+                        </div>
+                        
+                        {% if question.question_type == 'MCQ' %}
+                            <div class="options">
+                                {% for option in question.options %}
+                                <div class="form-check mb-2">
+                                    <input class="form-check-input" type="radio" name="question_{{ question.id }}" id="q{{ question.id }}_option{{ forloop.counter }}" value="{{ option }}">
+                                    <label class="form-check-label" for="q{{ question.id }}_option{{ forloop.counter }}">
+                                        {{ option }}
+                                    </label>
+                                </div>
+                                {% endfor %}
+                            </div>
+                            
+                        {% elif question.question_type == 'Short Answer' %}
+                            <div class="mb-3">
+                                <textarea class="form-control" name="question_{{ question.id }}" rows="4" placeholder="Type your answer here..."></textarea>
+                            </div>
+                            
+                        {% elif question.question_type == 'Drag-Drop' %}
+                            <div class="mb-3">
+                                <p class="text-muted">Arrange the following items in the correct order:</p>
+                                <div class="drag-drop-container">
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <h6>Available Items:</h6>
+                                            <div class="list-group" id="available-{{ question.id }}">
+                                                {% for option in question.options %}
+                                                <div class="list-group-item draggable-item" draggable="true" data-value="{{ option }}">
+                                                    {{ option }}
+                                                </div>
+                                                {% endfor %}
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <h6>Your Order:</h6>
+                                            <div class="list-group" id="ordered-{{ question.id }}" ondrop="drop(event)" ondragover="allowDrop(event)">
+                                                <div class="list-group-item text-muted text-center">
+                                                    Drop items here in correct order
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <input type="hidden" name="question_{{ question.id }}" id="drag-drop-{{ question.id }}" value="">
+                            </div>
+                        {% endif %}
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4">
+            <!-- Navigation -->
+            <div class="card">
+                <div class="card-header">
+                    <h6 class="mb-0">Question Navigation</h6>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        {% for question in questions %}
+                        <div class="col-3 mb-2">
+                            <button type="button" class="btn btn-outline-primary btn-sm w-100 question-nav" data-question="{{ question.id }}">
+                                {{ forloop.counter }}
+                            </button>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Progress -->
+            <div class="card mt-3">
+                <div class="card-header">
+                    <h6 class="mb-0">Progress</h6>
+                </div>
+                <div class="card-body">
+                    <div class="progress mb-2">
+                        <div class="progress-bar" role="progressbar" style="width: 0%" id="progressBar"></div>
+                    </div>
+                    <small class="text-muted">Answered: <span id="answeredCount">0</span> / {{ questions.count }}</small>
+                </div>
+            </div>
+            
+            <!-- Exam Info -->
+            <div class="card mt-3">
+                <div class="card-header">
+                    <h6 class="mb-0">Exam Information</h6>
+                </div>
+                <div class="card-body">
+                    <p><strong>Duration:</strong> {{ exam.duration }} minutes</p>
+                    <p><strong>Questions:</strong> {{ questions.count }}</p>
+                    <p><strong>Started:</strong> <span id="startTime">{{ exam.exam_start|time:"g:i A" }}</span></p>
+                </div>
+            </div>
+        </div>
+    </div>
+</form>
+
+<!-- Submit Confirmation Modal -->
+<div class="modal fade" id="submitModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Submit Exam</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to submit your exam?</p>
+                <p class="text-muted">You have answered <span id="finalAnsweredCount">0</span> out of {{ questions.count }} questions.</p>
+                <p class="text-warning"><strong>Note:</strong> Once submitted, you cannot make any changes.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-danger" onclick="confirmSubmit()">Submit Exam</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .question-container {
+        min-height: 400px;
+    }
+    
+    .draggable-item {
+        cursor: move;
+        margin-bottom: 5px;
+    }
+    
+    .draggable-item:hover {
+        background-color: #f8f9fa;
+    }
+    
+    .question-nav.answered {
+        background-color: #28a745;
+        color: white;
+    }
+    
+    .question-nav.current {
+        background-color: #007bff;
+        color: white;
+    }
+    
+    #timer {
+        font-size: 1.2rem;
+        padding: 0.5rem 1rem;
+    }
+    
+    .time-warning {
+        background-color: #ffc107 !important;
+        color: #000 !important;
+    }
+    
+    .time-danger {
+        background-color: #dc3545 !important;
+        color: #fff !important;
+    }
+</style>
+
+<script>
+    let currentQuestion = 1;
+    let totalQuestions = {{ questions.count }};
+    let timeRemaining = {{ exam.duration }} * 60; // Convert to seconds
+    let timerInterval;
+    
+    // Initialize exam
+    document.addEventListener('DOMContentLoaded', function() {
+        startTimer();
+        updateProgress();
+        updateNavigation();
+        
+        // Question navigation
+        document.querySelectorAll('.question-nav').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const questionId = this.dataset.question;
+                showQuestion(questionId);
+            });
+        });
+        
+        // Auto-save answers
+        document.querySelectorAll('input, textarea').forEach(input => {
+            input.addEventListener('change', function() {
+                updateProgress();
+                updateNavigation();
+            });
+        });
+    });
+    
+    function startTimer() {
+        timerInterval = setInterval(function() {
+            timeRemaining--;
+            updateTimer();
+            
+            if (timeRemaining <= 0) {
+                clearInterval(timerInterval);
+                alert('Time is up! Your exam will be submitted automatically.');
+                submitExam();
+            }
+        }, 1000);
+    }
+    
+    function updateTimer() {
+        const minutes = Math.floor(timeRemaining / 60);
+        const seconds = timeRemaining % 60;
+        const timerElement = document.getElementById('timer');
+        
+        timerElement.textContent = `Time: ${minutes}:${seconds.toString().padStart(2, '0')}`;
+        
+        // Change color based on remaining time
+        if (timeRemaining <= 300) { // 5 minutes
+            timerElement.className = 'badge bg-danger fs-6 time-danger';
+        } else if (timeRemaining <= 600) { // 10 minutes
+            timerElement.className = 'badge bg-warning fs-6 time-warning';
+        }
+    }
+    
+    function showQuestion(questionId) {
+        // Hide all questions
+        document.querySelectorAll('.question-container').forEach(q => {
+            q.style.display = 'none';
+        });
+        
+        // Show selected question
+        document.getElementById('question-' + questionId).style.display = 'block';
+        
+        // Update navigation
+        document.querySelectorAll('.question-nav').forEach(btn => {
+            btn.classList.remove('current');
+            if (btn.dataset.question === questionId) {
+                btn.classList.add('current');
+            }
+        });
+    }
+    
+    function updateProgress() {
+        let answered = 0;
+        
+        document.querySelectorAll('input[type="radio"]:checked, textarea').forEach(input => {
+            if (input.value.trim() !== '') {
+                answered++;
+            }
+        });
+        
+        const progress = (answered / totalQuestions) * 100;
+        document.getElementById('progressBar').style.width = progress + '%';
+        document.getElementById('answeredCount').textContent = answered;
+    }
+    
+    function updateNavigation() {
+        document.querySelectorAll('.question-nav').forEach(btn => {
+            const questionId = btn.dataset.question;
+            const hasAnswer = document.querySelector(`input[name="question_${questionId}"]:checked, textarea[name="question_${questionId}"]`);
+            
+            if (hasAnswer && hasAnswer.value.trim() !== '') {
+                btn.classList.add('answered');
+            } else {
+                btn.classList.remove('answered');
+            }
+        });
+    }
+    
+    function submitExam() {
+        // Update final count
+        let answered = 0;
+        document.querySelectorAll('input[type="radio"]:checked, textarea').forEach(input => {
+            if (input.value.trim() !== '') {
+                answered++;
+            }
+        });
+        
+        document.getElementById('finalAnsweredCount').textContent = answered;
+        
+        // Show confirmation modal
+        new bootstrap.Modal(document.getElementById('submitModal')).show();
+    }
+    
+    function confirmSubmit() {
+        // Update drag-drop answers
+        document.querySelectorAll('[id^="drag-drop-"]').forEach(input => {
+            const questionId = input.id.replace('drag-drop-', '');
+            const orderedItems = document.querySelectorAll(`#ordered-${questionId} .draggable-item`);
+            const values = Array.from(orderedItems).map(item => item.dataset.value);
+            input.value = values.join(',');
+        });
+        
+        // Submit form
+        document.getElementById('examForm').submit();
+    }
+    
+    // Drag and drop functionality
+    function allowDrop(ev) {
+        ev.preventDefault();
+    }
+    
+    function drag(ev) {
+        ev.dataTransfer.setData("text", ev.target.outerHTML);
+        ev.dataTransfer.setData("source", ev.target.parentElement.id);
+    }
+    
+    function drop(ev) {
+        ev.preventDefault();
+        const data = ev.dataTransfer.getData("text");
+        const sourceId = ev.dataTransfer.getData("source");
+        
+        if (ev.target.classList.contains('list-group') || ev.target.closest('.list-group')) {
+            const targetList = ev.target.classList.contains('list-group') ? ev.target : ev.target.closest('.list-group');
+            
+            if (targetList.id !== sourceId) {
+                const tempDiv = document.createElement('div');
+                tempDiv.innerHTML = data;
+                const draggedElement = tempDiv.firstElementChild;
+                
+                // Remove placeholder if it exists
+                const placeholder = targetList.querySelector('.text-muted');
+                if (placeholder) {
+                    placeholder.remove();
+                }
+                
+                targetList.appendChild(draggedElement);
+                
+                // Add drag event to new element
+                draggedElement.addEventListener('dragstart', drag);
+                
+                updateProgress();
+                updateNavigation();
+            }
+        }
+    }
+    
+    // Add drag events to initial items
+    document.querySelectorAll('.draggable-item').forEach(item => {
+        item.addEventListener('dragstart', drag);
+    });
+    
+    // Prevent page refresh/close during exam
+    window.addEventListener('beforeunload', function(e) {
+        e.preventDefault();
+        e.returnValue = 'Are you sure you want to leave? Your progress will be lost.';
+    });
+</script>
+{% endblock %}

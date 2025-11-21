@@ -1,0 +1,36 @@
+{% extends 'base.html' %}
+
+{% block title %}Add MCQ Question{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header bg-success text-white text-center">
+                    <h2><i class="fas fa-question-circle"></i> Add MCQ Question to {{ exam.title }}</h2>
+                </div>
+                <div class="card-body">
+                    <form method="post">
+                        {% csrf_token %}
+                        <div class="form-group">
+                            <label for="{{ form.question_text.id_for_label }}"><i class="fas fa-edit"></i> Question Text</label>
+                            {{ form.question_text }}
+                        </div>
+                        <div class="form-group">
+                            <label for="{{ form.options.id_for_label }}"><i class="fas fa-list-ol"></i> Options</label>
+                            {{ form.options }}
+                            <small class="form-text text-white">{{ form.options.help_text }}</small>
+                        </div>
+                        <div class="form-group">
+                            <label for="{{ form.correct_answer.id_for_label }}"><i class="fas fa-check"></i> Correct Answer</label>
+                            {{ form.correct_answer }}
+                        </div>
+                        <button type="submit" class="btn btn-success btn-block"><i class="fas fa-save"></i> Add MCQ Question</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

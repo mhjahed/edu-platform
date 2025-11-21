@@ -1,0 +1,288 @@
+{% extends 'base/base.html' %}
+{% load static %}
+
+{% block title %}Home - Final Exam Management System{% endblock %}
+
+{% block content %}
+<div class="row">
+    <!-- Welcome Section -->
+    <div class="col-12 mb-4">
+        {% if user.is_authenticated %}
+            <div class="jumbotron bg-primary text-white p-5 rounded">
+                <div class="container-fluid">
+                    <h1 class="display-4">
+                        Welcome back, {{ user.first_name|default:user.username }}!
+                        <i class="fas fa-{{ user.is_examiner|yesno:'chalkboard-teacher,user-graduate' }} ms-3"></i>
+                    </h1>
+                    <p class="lead">
+                        {% if user.is_examiner %}
+                            Manage your exams, track student registrations, and review results from your examiner dashboard.
+                        {% else %}
+                            Browse available exams, manage your registrations, and track your exam progress.
+                        {% endif %}
+                    </p>
+                    <hr class="my-4 border-light">
+                    <p class="mb-0">
+                        {% if user.is_examiner %}
+                            <a class="btn btn-light btn-lg me-3" href="{% url 'exams:examiner_dashboard' %}" role="button">
+                                <i class="fas fa-tachometer-alt me-2"></i>Go to Dashboard
+                            </a>
+                            <a class="btn btn-outline-light btn-lg" href="{% url 'exams:create_exam' %}" role="button">
+                                <i class="fas fa-plus-circle me-2"></i>Create New Exam
+                            </a>
+                        {% else %}
+                            <a class="btn btn-light btn-lg me-3" href="{% url 'exams:exam_list' %}" role="button">
+                                <i class="fas fa-list me-2"></i>Browse Exams
+                            </a>
+                            <a class="btn btn-outline-light btn-lg" href="{% url 'exams:my_registrations' %}" role="button">
+                                <i class="fas fa-clipboard-list me-2"></i>My Registrations
+                            </a>
+                        {% endif %}
+                    </p>
+                </div>
+            </div>
+        {% else %}
+            <div class="jumbotron bg-light p-5 rounded">
+                <div class="container-fluid text-center">
+                    <i class="fas fa-graduation-cap text-primary mb-4" style="font-size: 4rem;"></i>
+                    <h1 class="display-4">Final Exam Management System</h1>
+                    <p class="lead">A comprehensive platform for managing final examinations, student registrations, and results.</p>
+                    <hr class="my-4">
+                    <p>Join as an examiner to create and manage exams, or as a candidate to register and take exams.</p>
+                    <div class="mt-4">
+                        <a class="btn btn-primary btn-lg me-3" href="{% url 'accounts:register' %}" role="button">
+                            <i class="fas fa-user-plus me-2"></i>Get Started
+                        </a>
+                        <a class="btn btn-outline-primary btn-lg" href="{% url 'accounts:login' %}" role="button">
+                            <i class="fas fa-sign-in-alt me-2"></i>Sign In
+                        </a>
+                    </div>
+                </div>
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+{% if user.is_authenticated %}
+    <!-- Dashboard Cards -->
+    <div class="row mb-4">
+        {% if user.is_examiner %}
+            <!-- Examiner Dashboard Cards -->
+            <div class="col-md-3 col-sm-6 mb-3">
+                <div class="card dashboard-card">
+                    <div class="card-body text-center">
+                        <i class="fas fa-clipboard-list fa-2x mb-3"></i>
+                        <h4 class="card-title">My Exams</h4>
+                        <p class="display-6">{{ exam_count|default:0 }}</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3 col-sm-6 mb-3">
+                <div class="card dashboard-card">
+                    <div class="card-body text-center">
+                        <i class="fas fa-users fa-2x mb-3"></i>
+                        <h4 class="card-title">Total Registrations</h4>
+                        <p class="display-6">{{ total_registrations|default:0 }}</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3 col-sm-6 mb-3">
+                <div class="card dashboard-card">
+                    <div class="card-body text-center">
+                        <i class="fas fa-clock fa-2x mb-3"></i>
+                        <h4 class="card-title">Pending Verifications</h4>
+                        <p class="display-6">{{ pending_verifications|default:0 }}</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3 col-sm-6 mb-3">
+                <div class="card dashboard-card">
+                    <div class="card-body text-center">
+                        <i class="fas fa-chart-line fa-2x mb-3"></i>
+                        <h4 class="card-title">Completed Exams</h4>
+                        <p class="display-6">{{ completed_exams|default:0 }}</p>
+                    </div>
+                </div>
+            </div>
+        {% else %}
+            <!-- Candidate Dashboard Cards -->
+            <div class="col-md-4 col-sm-6 mb-3">
+                <div class="card dashboard-card">
+                    <div class="card-body text-center">
+                        <i class="fas fa-list fa-2x mb-3"></i>
+                        <h4 class="card-title">Available Exams</h4>
+                        <p class="display-6">{{ available_exams|default:0 }}</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4 col-sm-6 mb-3">
+                <div class="card dashboard-card">
+                    <div class="card-body text-center">
+                        <i class="fas fa-clipboard-check fa-2x mb-3"></i>
+                        <h4 class="card-title">My Registrations</h4>
+                        <p class="display-6">{{ my_registrations|default:0 }}</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4 col-sm-6 mb-3">
+                <div class="card dashboard-card">
+                    <div class="card-body text-center">
+                        <i class="fas fa-trophy fa-2x mb-3"></i>
+                        <h4 class="card-title">Completed Exams</h4>
+                        <p class="display-6">{{ completed_attempts|default:0 }}</p>
+                    </div>
+                </div>
+            </div>
+        {% endif %}
+    </div>
+
+    <!-- Recent Activity -->
+    <div class="row">
+        <div class="col-md-8 mb-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-history me-2"></i>Recent Activity
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% if recent_activities %}
+                        <div class="list-group list-group-flush">
+                            {% for activity in recent_activities %}
+                                <div class="list-group-item d-flex justify-content-between align-items-start">
+                                    <div class="ms-2 me-auto">
+                                        <div class="fw-bold">{{ activity.title }}</div>
+                                        <small class="text-muted">{{ activity.description }}</small>
+                                    </div>
+                                    <small class="text-muted">{{ activity.timestamp|timesince }} ago</small>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <p class="text-muted mb-0">No recent activity to display.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="col-md-4 mb-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-bolt me-2"></i>Quick Actions
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% if user.is_examiner %}
+                        <div class="d-grid gap-2">
+                            <a href="{% url 'exams:create_exam' %}" class="btn btn-primary">
+                                <i class="fas fa-plus me-2"></i>Create New Exam
+                            </a>
+                            <a href="{% url 'exams:examiner_dashboard' %}" class="btn btn-outline-primary">
+                                <i class="fas fa-tachometer-alt me-2"></i>View Dashboard
+                            </a>
+                            <a href="{% url 'inquiries:inbox' %}" class="btn btn-outline-secondary">
+                                <i class="fas fa-envelope me-2"></i>Check Messages
+                            </a>
+                        </div>
+                    {% else %}
+                        <div class="d-grid gap-2">
+                            <a href="{% url 'exams:exam_list' %}" class="btn btn-primary">
+                                <i class="fas fa-search me-2"></i>Find Exams
+                            </a>
+                            <a href="{% url 'exams:my_registrations' %}" class="btn btn-outline-primary">
+                                <i class="fas fa-list me-2"></i>My Registrations
+                            </a>
+                            <a href="{% url 'inquiries:create' %}" class="btn btn-outline-secondary">
+                                <i class="fas fa-question-circle me-2"></i>Ask Question
+                            </a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Upcoming Events -->
+    {% if upcoming_events %}
+        <div class="row">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0">
+                            <i class="fas fa-calendar me-2"></i>Upcoming Events
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            {% for event in upcoming_events %}
+                                <div class="col-md-6 col-lg-4 mb-3">
+                                    <div class="card border-start border-primary border-3">
+                                        <div class="card-body py-2">
+                                            <h6 class="card-title mb-1">{{ event.title }}</h6>
+                                            <p class="card-text text-muted small mb-1">{{ event.description }}</p>
+                                            <small class="text-primary">
+                                                <i class="fas fa-clock me-1"></i>{{ event.datetime|date:"M d, Y - H:i" }}
+                                            </small>
+                                        </div>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% endif %}
+{% else %}
+    <!-- Features Section for Non-authenticated Users -->
+    <div class="row">
+        <div class="col-12">
+            <h2 class="text-center mb-5">Features</h2>
+        </div>
+        
+        <div class="col-md-4 mb-4">
+            <div class="card h-100 text-center">
+                <div class="card-body">
+                    <i class="fas fa-user-tie text-primary fa-3x mb-3"></i>
+                    <h4 class="card-title">For Examiners</h4>
+                    <p class="card-text">Create and manage exams, verify student registrations, track participation, and generate detailed results.</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4 mb-4">
+            <div class="card h-100 text-center">
+                <div class="card-body">
+                    <i class="fas fa-user-graduate text-success fa-3x mb-3"></i>
+                    <h4 class="card-title">For Candidates</h4>
+                    <p class="card-text">Browse available exams, register online, take exams with real-time timer, and view results instantly.</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4 mb-4">
+            <div class="card h-100 text-center">
+                <div class="card-body">
+                    <i class="fas fa-comments text-info fa-3x mb-3"></i>
+                    <h4 class="card-title">Communication</h4>
+                    <p class="card-text">Built-in messaging system for inquiries, support requests, and communication between examiners and candidates.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endif %}
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Auto-refresh dashboard stats every 30 seconds
+    {% if user.is_authenticated %}
+    setInterval(function() {
+        // You can implement AJAX calls here to refresh stats
+        // For now, we'll skip this to keep it simple
+    }, 30000);
+    {% endif %}
+</script>
+{% endblock %}

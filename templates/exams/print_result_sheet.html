@@ -1,0 +1,302 @@
+{% load static %}
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Result Sheet - {{ exam.title }}</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap');
+        body {
+            font-family: 'Poppins', sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: white;
+            color: black;
+        }
+        
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 2px solid #000;
+        }
+        
+        .institute-info {
+            text-align: left;
+            margin-top: -10px;
+        }
+        
+        .contact-info {
+            text-align: right;
+        }
+        
+        .logo {
+            font-size: 24px;
+            font-weight: bold;
+            margin-top:-20px;
+        }
+        
+        .title {
+            text-align: center;
+            font-size: 28px;
+            font-weight: bold;
+            margin: 30px 0;
+            text-decoration: underline;
+        }
+        
+        .result-content {
+            margin: 20px 0;
+        }
+        
+        .result-row {
+            display: flex;
+            margin-bottom: 15px;
+        }
+        
+        .result-field {
+            flex: 1;
+            margin-right: 20px;
+        }
+        
+        .result-field:last-child {
+            margin-right: 0;
+        }
+        
+        .label {
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        
+        .value {
+            border-bottom: 1px solid #000;
+            padding: 5px 0;
+            min-height: 20px;
+        }
+        
+        .score-section {
+            text-align: center;
+            margin: 40px 0;
+            padding: 20px;
+            border: 2px solid #000;
+            border-radius: 10px;
+        }
+        img{
+            width: 85px;
+            margin-top: -20px;
+        }
+        .score {
+            font-size: 48px;
+            font-weight: bold;
+            color: #2c3e50;
+        }
+        
+        .grade {
+            font-size: 24px;
+            font-weight: bold;
+            margin-top: 10px;
+        }
+        
+        .signature-section {
+            margin-top: 50px;
+            display: flex;
+            justify-content: space-between;
+        }
+        
+        .signature-box {
+            width: 200px;
+            text-align: center;
+        }
+        
+        .signature-line {
+            border-bottom: 1px solid #000;
+            height: 40px;
+            margin-bottom: 5px;
+        }
+        
+        .footer {
+            margin-top: 50px;
+            text-align: center;
+            font-size: 10px;
+            color: #4b4b4bff;
+        }
+        
+        /* Responsive tweaks for mobile (screen only, not print) */
+@media screen and (max-width: 768px) {
+    body {
+        padding: 10px;
+        font-size: 14px;
+    }
+
+    .header {
+        flex-direction: column;
+        text-align: center;
+    }
+
+    .institute-info, .contact-info {
+        text-align: center;
+        margin: 10px 0;
+    }
+
+    .logo img {
+        width: 60px;
+    }
+
+    .title {
+        font-size: 22px;
+        margin: 20px 0;
+    }
+
+    .result-row {
+        flex-direction: column;
+    }
+
+    .result-field {
+        margin-right: 0;
+        margin-bottom: 15px;
+    }
+
+    .score-section {
+        padding: 15px;
+    }
+
+    .score {
+        font-size: 36px;
+    }
+
+    .grade {
+        font-size: 18px;
+    }
+
+    .signature-section {
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .signature-box {
+        width: 100%;
+        margin-bottom: 30px;
+    }
+}
+        @media print {
+            body {
+                margin: 0;
+                padding: 10px;
+            }
+            .no-print {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="institute-info">
+            <img src="{% static 'img/langchain-color.png' %}">
+            <div class="logo">Lang Chain AI</div>
+            <div>Website: www.langchain.ai</div>
+        </div>
+        <div class="contact-info">
+            <div>Email: info@langchain.ai</div>
+            <div>Phone: +1 (555) 131-7142</div>
+        </div>
+    </div>
+    
+    <div class="title">Exam Result Sheet</div>
+    
+    <div class="result-content">
+        <div class="result-row">
+            <div class="result-field">
+                <div class="label">Student Name:</div>
+                <div class="value">{{ registration.student_name }}</div>
+            </div>
+            <div class="result-field">
+                <div class="label">Exam Title:</div>
+                <div class="value">{{ exam.title }}</div>
+            </div>
+        </div>
+        
+        <div class="result-row">
+            <div class="result-field">
+                <div class="label">School/Institution:</div>
+                <div class="value">{{ registration.student_school }}</div>
+            </div>
+            <div class="result-field">
+                <div class="label">Class/Grade:</div>
+                <div class="value">{{ registration.student_class }}</div>
+            </div>
+        </div>
+        
+        <div class="result-row">
+            <div class="result-field">
+                <div class="label">Exam Date:</div>
+                <div class="value">{{ exam.exam_start|date:"M d, Y" }}</div>
+            </div>
+            <div class="result-field">
+                <div class="label">Exam Time:</div>
+                <div class="value">{{ exam.exam_start|time:"g:i A" }}</div>
+            </div>
+        </div>
+        
+        <div class="result-row">
+            <div class="result-field">
+                <div class="label">Duration:</div>
+                <div class="value">{{ exam.duration }} minutes</div>
+            </div>
+            <div class="result-field">
+                <div class="label">Examiner:</div>
+                <div class="value">{{ exam.examiner_name }}</div>
+            </div>
+        </div>
+        
+        <div class="result-row">
+            <div class="result-field">
+                <div class="label">Submission Date:</div>
+                <div class="value">{{ result.submitted_at|date:"M d, Y" }}</div>
+            </div>
+            <div class="result-field">
+                <div class="label">Submission Time:</div>
+                <div class="value">{{ result.submitted_at|time:"g:i A" }}</div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="score-section">
+        <div class="score">{{ result.score }}</div>
+        <div class="grade">
+            {% if result.score >= 80 %}
+                Grade: A+ (Excellent)
+            {% elif result.score >= 70 %}
+                Grade: A (Very Good)
+            {% elif result.score >= 60 %}
+                Grade: B (Good)
+            {% elif result.score >= 50 %}
+                Grade: C (Satisfactory)
+            {% else %}
+                Grade: F (Fail)
+            {% endif %}
+        </div>
+    </div>
+    
+    <div class="signature-section">
+        <div class="signature-box">
+            <div class="signature-line"></div>
+            <div>Student Signature</div>
+        </div>
+        <div class="signature-box">
+            <div class="signature-line"></div>
+            <div>Examiner Signature</div>
+        </div>
+    </div>
+    
+    <div class="footer">
+        <p>This result sheet is official and can be used for academic purposes.</p>
+        <p>For any queries, contact: {{ exam.contact_email|default:"info@langchain.ai" }} | Generated on: {% now "M d, Y \a\t g:i A" %}</p>
+    </div>
+    <div class="no-print" style="text-align:center;margin-bottom:20px;">
+    <button onclick="window.print()" style=" width: 140px; height:40px; border:none; border-radius: 15px;color:white; background-color:green; font-size:18px;">Print Result</button>
+</div>
+</body>
+</html>

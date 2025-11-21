@@ -1,0 +1,208 @@
+{% extends 'base.html' %}
+
+{% block title %}Manage {{ exam.title }} - Exam Management System{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2><i class="fas fa-cog me-2"></i>Manage Exam: {{ exam.title }}</h2>
+            <div>
+                <a href="{% url 'exam_details' exam.id %}" class="btn btn-outline-primary me-2">
+                    <i class="fas fa-edit me-1"></i>Edit Details
+                </a>
+                <a href="{% url 'examiner_dashboard' %}" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left me-1"></i>Back to Dashboard
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Exam Information -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-info-circle me-2"></i>Exam Information</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <p><strong>Title:</strong> {{ exam.title }}</p>
+                        <p><strong>Code:</strong> <span class="badge bg-primary">{{ exam.exam_code }}</span></p>
+                        <p><strong>Duration:</strong> {{ exam.duration }} minutes</p>
+                        <p><strong>Questions:</strong> {{ exam.question_set.count }}</p>
+                    </div>
+                    <div class="col-md-6">
+                        <p><strong>Registration Period:</strong> {{ exam.registration_start|date:"M d, Y" }} - {{ exam.registration_end|date:"M d, Y" }}</p>
+                        <p><strong>Exam Date:</strong> {{ exam.exam_start|date:"M d, Y" }} at {{ exam.exam_start|time:"g:i A" }}</p>
+                        <p><strong>Status:</strong> 
+                            {% if exam.registration_end > now %}
+                                <span class="badge bg-success">Open for Registration</span>
+                            {% elif exam.exam_end > now %}
+                                <span class="badge bg-warning">In Progress</span>
+                            {% else %}
+                                <span class="badge bg-secondary">Closed</span>
+                            {% endif %}
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Quick Actions -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-tools me-2"></i>Quick Actions</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-3 mb-2">
+                        <a href="{% url 'add_mcq_question' exam.id %}" class="btn btn-outline-primary w-100">
+                            <i class="fas fa-list me-1"></i>Add MCQ
+                        </a>
+                    </div>
+                    <div class="col-md-3 mb-2">
+                        <a href="{% url 'add_short_answer_question' exam.id %}" class="btn btn-outline-info w-100">
+                            <i class="fas fa-keyboard me-1"></i>Add Short Answer
+                        </a>
+                    </div>
+                    <div class="col-md-3 mb-2">
+                        <a href="{% url 'add_drag_drop_question' exam.id %}" class="btn btn-outline-warning w-100">
+                            <i class="fas fa-arrows-alt me-1"></i>Add Drag & Drop
+                        </a>
+                    </div>
+                    <div class="col-md-3 mb-2">
+                        <a href="{% url 'exam_requests' exam.id %}" class="btn btn-outline-success w-100">
+                            <i class="fas fa-envelope me-1"></i>View Requests
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Student Registrations -->
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0"><i class="fas fa-users me-2"></i>Student Registrations ({{ registrations.count }})</h5>
+                <div>
+                    <span class="badge bg-success me-2">{{ registrations|length }} Total</span>
+                    <span class="badge bg-warning me-2">{{ registrations|length }} Pending</span>
+                    <span class="badge bg-success me-2">{{ registrations|length }} Verified</span>
+                    <span class="badge bg-danger">{{ registrations|length }} Invalid</span>
+                </div>
+            </div>
+            <div class="card-body">
+                {% if registrations %}
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Student Name</th>
+                                    <th>School</th>
+                                    <th>Class</th>
+                                    <th>Group</th>
+                                    <th>Phone</th>
+                                    <th>Email</th>
+                                    <th>Registered</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for registration in registrations %}
+                                <tr>
+                                    <td>
+                                        <strong>{{ registration.student_name }}</strong>
+                                        <br><small class="text-muted">{{ registration.candidate.username }}</small>
+                                    </td>
+                                    <td>{{ registration.student_school }}</td>
+                                    <td>{{ registration.student_class }}</td>
+                                    <td>
+                                        <span class="badge bg-secondary">{{ registration.student_group }}</span>
+                                    </td>
+                                    <td>{{ registration.student_phone }}</td>
+                                    <td>{{ registration.student_email }}</td>
+                                    <td>
+                                        <small>{{ registration.registered_at|date:"M d, Y" }}</small>
+                                    </td>
+                                    <td>
+                                        <span class="badge status-badge 
+                                            {% if registration.status == 'Ready for Exam' %}status-ready
+                                            {% elif registration.status == 'Invalid' %}status-invalid
+                                            {% else %}status-pending{% endif %}">
+                                            {{ registration.status }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <div class="btn-group" role="group">
+                                            <a href="{% url 'verify_registration' registration.id %}" class="btn btn-sm btn-outline-primary">
+                                                <i class="fas fa-eye me-1"></i>Review
+                                            </a>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <div class="text-center py-4">
+                        <i class="fas fa-users fa-3x text-muted mb-3"></i>
+                        <h5 class="text-muted">No registrations yet</h5>
+                        <p class="text-muted">Students will appear here once they register for your exam.</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Exam Statistics -->
+<div class="row mt-4">
+    <div class="col-md-4 mb-3">
+        <div class="card bg-primary text-white">
+            <div class="card-body text-center">
+                <h4 class="mb-0">{{ registrations.count }}</h4>
+                <p class="mb-0">Total Registrations</p>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4 mb-3">
+        <div class="card bg-success text-white">
+            <div class="card-body text-center">
+                <h4 class="mb-0">{{ exam.question_set.count }}</h4>
+                <p class="mb-0">Questions Added</p>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4 mb-3">
+        <div class="card bg-info text-white">
+            <div class="card-body text-center">
+                <h4 class="mb-0">{{ exam.duration }}</h4>
+                <p class="mb-0">Duration (minutes)</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // Auto-refresh registrations every 30 seconds
+    setInterval(function() {
+        // You can add AJAX call here to refresh registrations
+    }, 30000);
+</script>
+{% endblock %}

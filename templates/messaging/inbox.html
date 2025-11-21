@@ -1,0 +1,28 @@
+{% extends 'base.html' %}
+
+{% block title %}Inbox{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <h2 class="text-center mb-4"><i class="fas fa-inbox"></i> Inbox</h2>
+    <a href="{% url 'send_message' %}" class="btn btn-success mb-3"><i class="fas fa-paper-plane"></i> Send Message</a>
+    <div class="list-group">
+        {% for message in messages %}
+            <div class="list-group-item">
+                <div class="d-flex w-100 justify-content-between">
+                    <h5 class="mb-1">{{ message.subject }}</h5>
+                    <small>{{ message.sent_at }}</small>
+                </div>
+                <p class="mb-1">From: {{ message.sender.username }}</p>
+                {% if not message.is_read %}
+                    <span class="badge badge-primary">New</span>
+                {% endif %}
+                <div class="mt-2">
+                    <a href="{% url 'send_message' %}?reply_to={{ message.sender.id }}" class="btn btn-sm btn-success">Reply</a>
+                    <a href="{% url 'view_message' message.id %}" class="btn btn-sm btn-primary">View</a>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

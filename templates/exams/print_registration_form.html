@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registration Form - {{ exam.title }}</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: white;
+            color: black;
+        }
+        
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 2px solid #000;
+            padding-bottom: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .institute-info {
+            text-align: left;
+        }
+        
+        .contact-info {
+            text-align: right;
+        }
+        
+        .logo {
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        
+        .title {
+            text-align: center;
+            font-size: 28px;
+            font-weight: bold;
+            margin: 30px 0;
+            text-decoration: underline;
+        }
+        
+        .form-content {
+            margin: 20px 0;
+        }
+        
+        .form-row {
+            display: flex;
+            margin-bottom: 15px;
+        }
+        
+        .form-field {
+            flex: 1;
+            margin-right: 20px;
+        }
+        
+        .form-field:last-child {
+            margin-right: 0;
+        }
+        
+        .label {
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        
+        .value {
+            border-bottom: 1px solid #000;
+            padding: 5px 0;
+            min-height: 20px;
+        }
+        
+        .full-width {
+            width: 100%;
+        }
+        
+        .signature-section {
+            margin-top: 50px;
+            display: flex;
+            justify-content: space-between;
+        }
+        
+        .signature-box {
+            width: 200px;
+            text-align: center;
+        }
+        
+        .signature-line {
+            border-bottom: 1px solid #000;
+            height: 40px;
+            margin-bottom: 5px;
+        }
+        
+        .footer {
+            margin-top: 50px;
+            text-align: center;
+            font-size: 12px;
+            color: #666;
+        }
+        
+        @media print {
+            body {
+                margin: 0;
+                padding: 15px;
+            }
+            
+            .no-print {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="institute-info">
+            <div class="logo">Institute Name</div>
+            <div>Website: www.institute.edu</div>
+        </div>
+        <div class="contact-info">
+            <div>Email: info@institute.edu</div>
+            <div>Phone: +1 (555) 123-4567</div>
+        </div>
+    </div>
+    
+    <div class="title">Student Registration Form</div>
+    
+    <div class="form-content">
+        <div class="form-row">
+            <div class="form-field">
+                <div class="label">Exam Title:</div>
+                <div class="value">{{ exam.title }}</div>
+            </div>
+            <div class="form-field">
+                <div class="label">Exam Code:</div>
+                <div class="value">{{ exam.exam_code }}</div>
+            </div>
+        </div>
+        
+        <div class="form-row">
+            <div class="form-field">
+                <div class="label">Student Name:</div>
+                <div class="value">{{ registration.student_name }}</div>
+            </div>
+            <div class="form-field">
+                <div class="label">Phone Number:</div>
+                <div class="value">{{ registration.student_phone }}</div>
+            </div>
+        </div>
+        
+        <div class="form-row">
+            <div class="form-field">
+                <div class="label">School/Institution:</div>
+                <div class="value">{{ registration.student_school }}</div>
+            </div>
+            <div class="form-field">
+                <div class="label">Class/Grade:</div>
+                <div class="value">{{ registration.student_class }}</div>
+            </div>
+        </div>
+        
+        <div class="form-row">
+            <div class="form-field">
+                <div class="label">Group:</div>
+                <div class="value">{{ registration.student_group }}</div>
+            </div>
+            <div class="form-field">
+                <div class="label">Email Address:</div>
+                <div class="value">{{ registration.student_email }}</div>
+            </div>
+        </div>
+        
+        {% if registration.student_whatsapp %}
+        <div class="form-row">
+            <div class="form-field">
+                <div class="label">WhatsApp Number:</div>
+                <div class="value">{{ registration.student_whatsapp }}</div>
+            </div>
+            <div class="form-field">
+                <div class="label">Registration Date:</div>
+                <div class="value">{{ registration.registered_at|date:"M d, Y" }}</div>
+            </div>
+        </div>
+        {% endif %}
+        
+        {% if registration.student_address %}
+        <div class="form-row">
+            <div class="form-field full-width">
+                <div class="label">Address:</div>
+                <div class="value">{{ registration.student_address }}</div>
+            </div>
+        </div>
+        {% endif %}
+        
+        <div class="form-row">
+            <div class="form-field">
+                <div class="label">Exam Date:</div>
+                <div class="value">{{ exam.exam_start|date:"M d, Y" }}</div>
+            </div>
+            <div class="form-field">
+                <div class="label">Exam Time:</div>
+                <div class="value">{{ exam.exam_start|time:"g:i A" }}</div>
+            </div>
+        </div>
+        
+        <div class="form-row">
+            <div class="form-field">
+                <div class="label">Duration:</div>
+                <div class="value">{{ exam.duration }} minutes</div>
+            </div>
+            <div class="form-field">
+                <div class="label">Examiner:</div>
+                <div class="value">{{ exam.examiner_name }}</div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="signature-section">
+        <div class="signature-box">
+            <div class="signature-line"></div>
+            <div>Student Signature</div>
+        </div>
+        <div class="signature-box">
+            <div class="signature-line"></div>
+            <div>Examiner Signature</div>
+        </div>
+    </div>
+    
+    <div class="footer">
+        <p>This form must be submitted before the registration deadline: {{ exam.registration_end|date:"M d, Y" }}</p>
+        <p>For any queries, contact: {{ exam.contact_email|default:"info@institute.edu" }}</p>
+    </div>
+</body>
+</html>

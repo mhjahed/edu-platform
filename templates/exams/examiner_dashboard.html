@@ -1,0 +1,413 @@
+{% extends 'base/base.html' %}
+{% load static %}
+
+{% block title %}Examiner Dashboard - Final Exam Management System{% endblock %}
+
+{% block content %}
+<!-- Dashboard Header -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center">
+            <div>
+                <h1 class="h2 mb-1">
+                    <i class="fas fa-tachometer-alt me-2"></i>Examiner Dashboard
+                </h1>
+                <p class="text-muted">Welcome back, {{ user.first_name|default:user.username }}!</p>
+            </div>
+            <div>
+                <a href="{% url 'exams:create_exam' %}" class="btn btn-primary">
+                    <i class="fas fa-plus me-2"></i>Create New Exam
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Statistics Cards -->
+<div class="row mb-4">
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card border-left-primary shadow h-100 py-2">
+            <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
+                            Total Exams
+                        </div>
+                        <div class="h5 mb-0 font-weight-bold text-gray-800">{{ total_exams|default:0 }}</div>
+                    </div>
+                    <div class="col-auto">
+                        <i class="fas fa-clipboard-list fa-2x text-gray-300"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card border-left-success shadow h-100 py-2">
+            <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
+                            Active Exams
+                        </div>
+                        <div class="h5 mb-0 font-weight-bold text-gray-800">{{ active_exams|default:0 }}</div>
+                    </div>
+                    <div class="col-auto">
+                        <i class="fas fa-play-circle fa-2x text-gray-300"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card border-left-info shadow h-100 py-2">
+            <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
+                            Total Registrations
+                        </div>
+                        <div class="h5 mb-0 font-weight-bold text-gray-800">{{ total_registrations|default:0 }}</div>
+                    </div>
+                    <div class="col-auto">
+                        <i class="fas fa-users fa-2x text-gray-300"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card border-left-warning shadow h-100 py-2">
+            <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
+                            Pending Verifications
+                        </div>
+                        <div class="h5 mb-0 font-weight-bold text-gray-800">{{ pending_verifications|default:0 }}</div>
+                    </div>
+                    <div class="col-auto">
+                        <i class="fas fa-clock fa-2x text-gray-300"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Quick Actions -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-bolt me-2"></i>Quick Actions
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-3 mb-3">
+                        <a href="{% url 'exams:create_exam' %}" class="btn btn-outline-primary w-100">
+                            <i class="fas fa-plus fa-2x mb-2"></i><br>
+                            Create New Exam
+                        </a>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <a href="#" class="btn btn-outline-success w-100" onclick="showPendingVerifications()">
+                            <i class="fas fa-user-check fa-2x mb-2"></i><br>
+                            Verify Registrations
+                        </a>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <a href="#" class="btn btn-outline-info w-100" onclick="showActiveExams()">
+                            <i class="fas fa-chart-line fa-2x mb-2"></i><br>
+                            View Results
+                        </a>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <a href="{% url 'inquiries:inbox' %}" class="btn btn-outline-secondary w-100">
+                            <i class="fas fa-envelope fa-2x mb-2"></i><br>
+                            Messages
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Exams Management -->
+<div class="row">
+    <div class="col-lg-8">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">
+                    <i class="fas fa-list me-2"></i>My Exams
+                </h5>
+                <div class="dropdown">
+                    <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" id="examFilterDropdown" data-bs-toggle="dropdown">
+                        Filter by Status
+                    </button>
+                    <ul class="dropdown-menu" aria-labelledby="examFilterDropdown">
+                        <li><a class="dropdown-item" href="#" onclick="filterExams('all')">All Exams</a></li>
+                        <li><a class="dropdown-item" href="#" onclick="filterExams('draft')">Draft</a></li>
+                        <li><a class="dropdown-item" href="#" onclick="filterExams('published')">Published</a></li>
+                        <li><a class="dropdown-item" href="#" onclick="filterExams('ongoing')">Ongoing</a></li>
+                        <li><a class="dropdown-item" href="#" onclick="filterExams('completed')">Completed</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="card-body p-0">
+                {% if exams %}
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0" id="examsTable">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Exam Code</th>
+                                    <th>Title</th>
+                                    <th>Status</th>
+                                    <th>Registrations</th>
+                                    <th>Exam Date</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for exam in exams %}
+                                <tr data-status="{{ exam.status }}">
+                                    <td>
+                                        <span class="font-weight-bold">{{ exam.exam_code }}</span>
+                                    </td>
+                                    <td>
+                                        <div>
+                                            <strong>{{ exam.title|truncatechars:30 }}</strong>
+                                            {% if exam.description %}
+                                                <br><small class="text-muted">{{ exam.description|truncatechars:50 }}</small>
+                                            {% endif %}
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-{{ exam.status|yesno:'success,warning,secondary' }} status-{{ exam.status }}">
+                                            {{ exam.get_status_display }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-info">{{ exam.registered_count }}</span> / 
+                                        <span class="text-muted">{{ exam.max_participants }}</span>
+                                    </td>
+                                    <td>
+                                        <small>
+                                            {% if exam.exam_start %}
+                                                {{ exam.exam_start|date:"M d, Y H:i" }}
+                                            {% else %}
+                                                Not scheduled
+                                            {% endif %}
+                                        </small>
+                                    </td>
+                                    <td>
+                                        <div class="btn-group btn-group-sm" role="group">
+                                            <a href="{% url 'exams:manage_questions' exam.pk %}" class="btn btn-outline-primary" title="Manage Questions">
+                                                <i class="fas fa-question-circle"></i>
+                                            </a>
+                                            <a href="{% url 'exams:exam_registrations' exam.pk %}" class="btn btn-outline-info" title="View Registrations">
+                                                <i class="fas fa-users"></i>
+                                            </a>
+                                            {% if exam.status == 'draft' %}
+                                                <a href="{% url 'exams:edit_exam' exam.pk %}" class="btn btn-outline-secondary" title="Edit Exam">
+                                                    <i class="fas fa-edit"></i>
+                                                </a>
+                                                <button class="btn btn-outline-success" onclick="publishExam({{ exam.pk }})" title="Publish Exam">
+                                                    <i class="fas fa-paper-plane"></i>
+                                                </button>
+                                            {% endif %}
+                                            {% if exam.status in 'completed' %}
+                                                <a href="{% url 'exams:exam_results' exam.pk %}" class="btn btn-outline-warning" title="View Results">
+                                                    <i class="fas fa-chart-bar"></i>
+                                                </a>
+                                            {% endif %}
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <div class="text-center py-5">
+                        <i class="fas fa-clipboard-list fa-3x text-muted mb-3"></i>
+                        <h5 class="text-muted">No exams created yet</h5>
+                        <p class="text-muted">Create your first exam to get started</p>
+                        <a href="{% url 'exams:create_exam' %}" class="btn btn-primary">
+                            <i class="fas fa-plus me-2"></i>Create New Exam
+                        </a>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <!-- Sidebar -->
+    <div class="col-lg-4">
+        <!-- Recent Activity -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h6 class="mb-0">
+                    <i class="fas fa-history me-2"></i>Recent Activity
+                </h6>
+            </div>
+            <div class="card-body p-0">
+                {% if recent_activities %}
+                    <div class="list-group list-group-flush">
+                        {% for activity in recent_activities %}
+                            <div class="list-group-item d-flex align-items-center">
+                                <div class="flex-shrink-0">
+                                    <i class="fas fa-{{ activity.icon|default:'circle' }} text-{{ activity.type|default:'primary' }}"></i>
+                                </div>
+                                <div class="flex-grow-1 ms-3">
+                                    <div class="fw-bold">{{ activity.title }}</div>
+                                    <small class="text-muted">{{ activity.description }}</small>
+                                    <div class="small text-muted mt-1">{{ activity.created_at|timesince }} ago</div>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <div class="text-center py-3">
+                        <small class="text-muted">No recent activity</small>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+        
+        <!-- Upcoming Exams -->
+        <div class="card">
+            <div class="card-header">
+                <h6 class="mb-0">
+                    <i class="fas fa-calendar-alt me-2"></i>Upcoming Exams
+                </h6>
+            </div>
+            <div class="card-body p-0">
+                {% if upcoming_exams %}
+                    <div class="list-group list-group-flush">
+                        {% for exam in upcoming_exams %}
+                            <div class="list-group-item">
+                                <div class="d-flex w-100 justify-content-between">
+                                    <h6 class="mb-1">{{ exam.title|truncatechars:20 }}</h6>
+                                    <small class="text-{{ exam.status }}">{{ exam.get_status_display }}</small>
+                                </div>
+                                <p class="mb-1">{{ exam.exam_code }}</p>
+                                <small class="text-muted">
+                                    <i class="fas fa-clock me-1"></i>{{ exam.exam_start|date:"M d, H:i" }}
+                                </small>
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <div class="text-center py-3">
+                        <small class="text-muted">No upcoming exams</small>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Dashboard JavaScript functionality
+document.addEventListener('DOMContentLoaded', function() {
+    // Initialize tooltips
+    var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+    var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+        return new bootstrap.Tooltip(tooltipTriggerEl);
+    });
+});
+
+function filterExams(status) {
+    const rows = document.querySelectorAll('#examsTable tbody tr');
+    
+    rows.forEach(row => {
+        const rowStatus = row.getAttribute('data-status');
+        if (status === 'all' || rowStatus === status) {
+            row.style.display = '';
+        } else {
+            row.style.display = 'none';
+        }
+    });
+    
+    // Update dropdown text
+    const dropdownBtn = document.getElementById('examFilterDropdown');
+    const statusText = status === 'all' ? 'All Exams' : status.charAt(0).toUpperCase() + status.slice(1);
+    dropdownBtn.textContent = statusText;
+}
+
+function publishExam(examId) {
+    if (confirm('Are you sure you want to publish this exam? Once published, students can register for it.')) {
+        // Send AJAX request to publish exam
+        fetch(`/exams/${examId}/publish/`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]')?.value || getCookie('csrftoken'),
+                'Content-Type': 'application/json',
+            },
+        })
+        .then(response => {
+            if (response.ok) {
+                location.reload();
+            } else {
+                alert('Error publishing exam. Please try again.');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Error publishing exam. Please try again.');
+        });
+    }
+}
+
+function showPendingVerifications() {
+    // Redirect to first exam with pending verifications
+    // This could be enhanced to show a modal with all pending verifications
+    window.location.href = '#'; // Placeholder
+}
+
+function showActiveExams() {
+    filterExams('ongoing');
+}
+
+// CSRF token helper function
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+
+// Auto-refresh dashboard statistics every 5 minutes
+setInterval(function() {
+    // This could be enhanced to fetch updated statistics via AJAX
+    // For now, we'll just refresh the page
+    location.reload();
+}, 300000); // 5 minutes
+
+// Real-time notifications (placeholder)
+function checkForNotifications() {
+    // This would typically use WebSockets or Server-Sent Events
+    // For now, it's just a placeholder
+}
+
+// Initialize notification checking
+setInterval(checkForNotifications, 30000); // Check every 30 seconds
+</script>
+{% endblock %}

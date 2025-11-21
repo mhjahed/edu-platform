@@ -1,0 +1,223 @@
+{% extends 'base.html' %}
+
+{% block title %}Exam Instructions - {{ exam.title }}{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-10 col-lg-8">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h4 class="mb-0">
+                    <i class="fas fa-info-circle me-2"></i>Exam Instructions - {{ exam.title }}
+                </h4>
+            </div>
+            <div class="card-body">
+                <!-- Exam Overview -->
+                <div class="alert alert-info">
+                    <h6><i class="fas fa-clipboard-list me-2"></i>Exam Overview</h6>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <strong>Exam Title:</strong> {{ exam.title }}<br>
+                            <strong>Examiner:</strong> {{ exam.examiner_name }}<br>
+                            <strong>Duration:</strong> {{ exam.duration }} minutes
+                        </div>
+                        <div class="col-md-6">
+                            <strong>Exam Date:</strong> {{ exam.exam_start|date:"M d, Y" }}<br>
+                            <strong>Start Time:</strong> {{ exam.exam_start|time:"g:i A" }}<br>
+                            <strong>End Time:</strong> {{ exam.exam_end|time:"g:i A" }}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Registration Status -->
+                <div class="alert alert-{% if registration.status == 'Ready for Exam' %}success{% elif registration.status == 'Invalid' %}danger{% else %}warning{% endif %}">
+                    <h6><i class="fas fa-{% if registration.status == 'Ready for Exam' %}check-circle{% elif registration.status == 'Invalid' %}times-circle{% else %}clock{% endif %} me-2"></i>Registration Status</h6>
+                    <p class="mb-0">
+                        <strong>Status:</strong> 
+                        <span class="badge bg-{% if registration.status == 'Ready for Exam' %}success{% elif registration.status == 'Invalid' %}danger{% else %}warning{% endif %}">
+                            {{ registration.status }}
+                        </span>
+                    </p>
+                    {% if registration.status == 'Invalid' and registration.invalidation_reason %}
+                        <p class="mt-2 mb-0"><strong>Reason:</strong> {{ registration.invalidation_reason }}</p>
+                    {% endif %}
+                </div>
+
+                <!-- Exam Instructions -->
+                {% if exam.instructions %}
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h6 class="mb-0"><i class="fas fa-list-ol me-2"></i>Exam Instructions</h6>
+                    </div>
+                    <div class="card-body">
+                        {{ exam.instructions|linebreaks }}
+                    </div>
+                </div>
+                {% endif %}
+
+                <!-- General Instructions -->
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h6 class="mb-0"><i class="fas fa-graduation-cap me-2"></i>General Instructions</h6>
+                    </div>
+                    <div class="card-body">
+                        <ol>
+                            <li><strong>Time Management:</strong> You have {{ exam.duration }} minutes to complete the exam. Manage your time wisely.</li>
+                            <li><strong>Question Types:</strong> The exam may contain multiple choice questions, short answer questions, and drag-and-drop questions.</li>
+                            <li><strong>Navigation:</strong> Use the navigation buttons to move between questions. You can review and change your answers.</li>
+                            <li><strong>Submission:</strong> Make sure to submit your exam before the time expires. Unsubmitted exams will be automatically saved.</li>
+                            <li><strong>Technical Issues:</strong> If you encounter any technical problems, contact your examiner immediately.</li>
+                            <li><strong>Honor Code:</strong> This is an individual exam. Do not collaborate with other students or use unauthorized materials.</li>
+                        </ol>
+                    </div>
+                </div>
+
+                <!-- Exam Difficulties -->
+                {% if exam.difficulties %}
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h6 class="mb-0"><i class="fas fa-chart-bar me-2"></i>Exam Difficulty</h6>
+                    </div>
+                    <div class="card-body">
+                        <p class="mb-0">{{ exam.difficulties }}</p>
+                    </div>
+                </div>
+                {% endif %}
+
+                <!-- Contact Information -->
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h6 class="mb-0"><i class="fas fa-phone me-2"></i>Contact Information</h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <strong>Examiner:</strong> {{ exam.examiner_name }}<br>
+                                <strong>Position:</strong> {{ exam.examiner_position }}<br>
+                                <strong>Profession:</strong> {{ exam.examiner_profession }}
+                            </div>
+                            <div class="col-md-6">
+                                {% if exam.contact_email %}
+                                <strong>Email:</strong> {{ exam.contact_email }}<br>
+                                {% endif %}
+                                <strong>Exam Code:</strong> {{ exam.exam_code }}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="text-center">
+                    {% if registration.status == 'Ready for Exam' %}
+                        <div id="examActionButtons">
+                            <a href="{% url 'take_exam' exam.id %}" class="btn btn-success btn-lg me-3" id="startExamBtn" style="display: none;">
+                                <i class="fas fa-play me-2"></i>Start Exam
+                            </a>
+                            <button class="btn btn-secondary btn-lg me-3" id="notStartedBtn" disabled style="display: none;">
+                                <i class="fas fa-clock me-2"></i>Exam Not Started Yet
+                            </button>
+                            <button class="btn btn-danger btn-lg me-3" id="expiredBtn" disabled style="display: none;">
+                                <i class="fas fa-times me-2"></i>Exam Time Expired
+                            </button>
+                        </div>
+                        
+                        <!-- Real-time Status -->
+                        <div class="alert alert-info mt-3" id="examStatusAlert">
+                            <i class="fas fa-info-circle me-2"></i>
+                            <span id="examStatusText">Checking exam status...</span>
+                        </div>
+                    {% elif registration.status == 'Invalid' %}
+                        <button class="btn btn-danger btn-lg me-3" disabled>
+                            <i class="fas fa-ban me-2"></i>Registration Invalid
+                        </button>
+                    {% else %}
+                        <button class="btn btn-warning btn-lg me-3" disabled>
+                            <i class="fas fa-hourglass-half me-2"></i>Awaiting Verification
+                        </button>
+                    {% endif %}
+                    
+                    <a href="{% url 'candidate_home' %}" class="btn btn-outline-primary">
+                        <i class="fas fa-home me-2"></i>Back to Home
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .card {
+        box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+    }
+    
+    .alert {
+        border-radius: 0.5rem;
+    }
+    
+    ol li {
+        margin-bottom: 0.5rem;
+    }
+    
+    .badge {
+        font-size: 0.9em;
+    }
+</style>
+
+<script>
+    // Real-time exam status checking
+    function checkExamStatus() {
+        const now = new Date();
+        const examStart = new Date('{{ exam.exam_start|date:"c" }}');
+        const examEnd = new Date('{{ exam.exam_end|date:"c" }}');
+        
+        const startBtn = document.getElementById('startExamBtn');
+        const notStartedBtn = document.getElementById('notStartedBtn');
+        const expiredBtn = document.getElementById('expiredBtn');
+        const statusText = document.getElementById('examStatusText');
+        const statusAlert = document.getElementById('examStatusAlert');
+        
+        if (now >= examStart && now <= examEnd) {
+            // Exam is ongoing
+            startBtn.style.display = 'inline-block';
+            notStartedBtn.style.display = 'none';
+            expiredBtn.style.display = 'none';
+            
+            statusText.textContent = 'Exam is currently ongoing! You can start now.';
+            statusAlert.className = 'alert alert-success mt-3';
+            
+            // Calculate remaining time
+            const remainingMs = examEnd - now;
+            const remainingMinutes = Math.floor(remainingMs / (1000 * 60));
+            const remainingSeconds = Math.floor((remainingMs % (1000 * 60)) / 1000);
+            
+            statusText.innerHTML = `Exam is ongoing! <strong>Time remaining: ${remainingMinutes}:${remainingSeconds.toString().padStart(2, '0')}</strong>`;
+            
+        } else if (now < examStart) {
+            // Exam hasn't started
+            startBtn.style.display = 'none';
+            notStartedBtn.style.display = 'inline-block';
+            expiredBtn.style.display = 'none';
+            
+            const timeUntilStart = examStart - now;
+            const hoursUntilStart = Math.floor(timeUntilStart / (1000 * 60 * 60));
+            const minutesUntilStart = Math.floor((timeUntilStart % (1000 * 60 * 60)) / (1000 * 60));
+            
+            statusText.textContent = `Exam starts in ${hoursUntilStart}h ${minutesUntilStart}m`;
+            statusAlert.className = 'alert alert-info mt-3';
+            
+        } else {
+            // Exam has ended
+            startBtn.style.display = 'none';
+            notStartedBtn.style.display = 'none';
+            expiredBtn.style.display = 'inline-block';
+            
+            statusText.textContent = 'Exam time has ended.';
+            statusAlert.className = 'alert alert-danger mt-3';
+        }
+    }
+    
+    // Check status immediately and then every 10 seconds
+    checkExamStatus();
+    setInterval(checkExamStatus, 10000);
+</script>
+{% endblock %}

@@ -1,0 +1,212 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Exam Management System{% endblock %}</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    <link rel="icon" type="image/png" href="{% static 'img/link.png' %}">
+
+    <style>
+        .navbar-brand {
+            font-weight: bold;
+            color: #2c3e50 !important;
+        }
+        .role-badge {
+            font-size: 0.8em;
+            padding: 0.25em 0.5em;
+        }
+        .card {
+            box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+            border: 1px solid rgba(0, 0, 0, 0.125);
+        }
+        .btn-primary {
+            background-color: #3498db;
+            border-color: #3498db;
+        }
+        .btn-primary:hover {
+            background-color: #2980b9;
+            border-color: #2980b9;
+        }
+        .alert {
+            border-radius: 0.5rem;
+        }
+        .status-badge {
+            font-size: 0.75em;
+            padding: 0.25em 0.5em;
+        }
+        .status-pending { background-color: #ffc107; color: #000; }
+        .status-ready { background-color: #28a745; color: #fff; }
+        .status-invalid { background-color: #dc3545; color: #fff; }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm">
+        <div class="container">
+            <a class="navbar-brand" href="{% url 'home' %}">
+                <i class="fas fa-graduation-cap me-2"></i>Exam Management System
+            </a>
+            
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    {% if user.is_authenticated %}
+                        {% if user.profile.role == 'Examiner' %}
+                            <li class="nav-item">
+                                <a class="nav-link" href="{% url 'examiner_dashboard' %}">
+                                    <i class="fas fa-tachometer-alt me-1"></i>Dashboard
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="{% url 'create_exam' %}">
+                                    <i class="fas fa-plus me-1"></i>Create Exam
+                                </a>
+                            </li>
+                        {% elif user.profile.role == 'Candidate' %}
+                            <li class="nav-item">
+                                <a class="nav-link" href="{% url 'candidate_home' %}">
+                                    <i class="fas fa-home me-1"></i>Home
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="{% url 'view_results' %}">
+                                    <i class="fas fa-graduation-cap me-1"></i>View Results
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="{% url 'browse_exams' %}">
+                                    <i class="fas fa-search me-1"></i>Browse Exams
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="{% url 'candidate_requests' %}">
+                                    <i class="fas fa-envelope me-1"></i>Requests
+                                </a>
+                            </li>
+                        {% endif %}
+                    {% endif %}
+                </ul>
+                
+                <ul class="navbar-nav">
+                    {% if user.is_authenticated %}
+                        <!-- Digital Clock -->
+                        <li class="nav-item">
+                            <div class="nav-link">
+                                <i class="fas fa-clock me-1"></i>
+                                <span id="digitalClock" class="fw-bold"></span>
+                            </div>
+                        </li>
+                        
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown">
+                                <i class="fas fa-user me-1"></i>{{ user.first_name|default:user.username }}
+                                <span class="badge role-badge bg-{% if user.profile.role == 'Examiner' %}primary{% else %}success{% endif %} ms-1">
+                                    {{ user.profile.role }}
+                                </span>
+                            </a>
+                            <ul class="dropdown-menu">
+                                {% if user.profile.role == 'Examiner' %}
+                                    <li><a class="dropdown-item" href="{% url 'examiner_profile' %}">
+                                        <i class="fas fa-user-edit me-2"></i>Profile
+                                    </a></li>
+                                {% else %}
+                                    <li><a class="dropdown-item" href="{% url 'candidate_profile' %}">
+                                        <i class="fas fa-user-edit me-2"></i>Profile
+                                    </a></li>
+                                {% endif %}
+                                <li><hr class="dropdown-divider"></li>
+                                <li><a class="dropdown-item" href="{% url 'logout' %}">
+                                    <i class="fas fa-sign-out-alt me-2"></i>Logout
+                                </a></li>
+                            </ul>
+                        </li>
+                    {% else %}
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle" href="#" id="authDropdown" role="button" data-bs-toggle="dropdown">
+                                <i class="fas fa-sign-in-alt me-1"></i>Login
+                            </a>
+                            <ul class="dropdown-menu">
+                                <li><a class="dropdown-item" href="{% url 'examiner_login' %}">
+                                    <i class="fas fa-chalkboard-teacher me-2"></i>Examiner Login
+                                </a></li>
+                                <li><a class="dropdown-item" href="{% url 'candidate_login' %}">
+                                    <i class="fas fa-user-graduate me-2"></i>Candidate Login
+                                </a></li>
+                            </ul>
+                        </li>
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle" href="#" id="signupDropdown" role="button" data-bs-toggle="dropdown">
+                                <i class="fas fa-user-plus me-1"></i>Sign Up
+                            </a>
+                            <ul class="dropdown-menu">
+                                <li><a class="dropdown-item" href="{% url 'examiner_signup' %}">
+                                    <i class="fas fa-chalkboard-teacher me-2"></i>Examiner Signup
+                                </a></li>
+                                <li><a class="dropdown-item" href="{% url 'candidate_signup' %}">
+                                    <i class="fas fa-user-graduate me-2"></i>Candidate Signup
+                                </a></li>
+                            </ul>
+                        </li>
+                    {% endif %}
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <main class="container mt-4">
+        {% if messages %}
+            {% for message in messages %}
+                <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            {% endfor %}
+        {% endif %}
+        
+        {% block content %}{% endblock %}
+    </main>
+
+    <footer class="bg-light text-center text-muted py-4 mt-5">
+        <div class="container">
+            <p>&copy; 2024 Exam Management System. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- Digital Clock Script -->
+    <script>
+        function updateClock() {
+            const now = new Date();
+            const timeString = now.toLocaleTimeString('en-US', {
+                hour12: true,
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit'
+            });
+            const dateString = now.toLocaleDateString('en-US', {
+                weekday: 'short',
+                month: 'short',
+                day: 'numeric'
+            });
+            
+            const clockElement = document.getElementById('digitalClock');
+            if (clockElement) {
+                clockElement.innerHTML = `${timeString} <small class="text-muted">${dateString}</small>`;
+            }
+        }
+        
+        // Update clock immediately and then every second
+        updateClock();
+        setInterval(updateClock, 1000);
+    </script>
+    
+    {% block scripts %}{% endblock %}
+</body>
+</html>

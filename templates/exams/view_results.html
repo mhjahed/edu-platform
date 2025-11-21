@@ -1,0 +1,278 @@
+{% extends 'base.html' %}
+
+{% block title %}My Results - Exam Management System{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2><i class="fas fa-chart-line me-2"></i>My Exam Results</h2>
+            <a href="{% url 'candidate_home' %}" class="btn btn-outline-primary">
+                <i class="fas fa-arrow-left me-2"></i>Back to Home
+            </a>
+        </div>
+    </div>
+</div>
+
+{% if results %}
+    <div class="row">
+        {% for result in results %}
+        <div class="col-md-6 col-lg-4 mb-4">
+            <div class="card h-100">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">{{ result.registration.exam.title }}</h5>
+                </div>
+                <div class="card-body">
+                    <div class="text-center mb-3">
+                        <div class="display-4 fw-bold text-{% if result.score >= 80 %}success{% elif result.score >= 60 %}warning{% else %}danger{% endif %}">
+                            {{ result.score }}
+                        </div>
+                        <div class="text-white">
+                            {% if result.score >= 80 %}
+                                Grade: A+ (Excellent)
+                            {% elif result.score >= 70 %}
+                                Grade: A (Very Good)
+                            {% elif result.score >= 60 %}
+                                Grade: B (Good)
+                            {% elif result.score >= 50 %}
+                                Grade: C (Satisfactory)
+                            {% else %}
+                                Grade: F (Fail)
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <div class="row">
+                            <div class="col-6">
+                                <small class="text-white">
+                                    <i class="fas fa-user me-1"></i><strong>Examiner:</strong><br>
+                                    {{ result.registration.exam.examiner_name }}
+                                </small>
+                            </div>
+                            <div class="col-6">
+                                <small class="text-white">
+                                    <i class="fas fa-calendar me-1"></i><strong>Exam Date:</strong><br>
+                                    {{ result.registration.exam.exam_start|date:"M d, Y" }}
+                                </small>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <div class="row">
+                            <div class="col-6">
+                                <small class="text-white">
+                                    <i class="fas fa-clock me-1"></i><strong>Duration:</strong><br>
+                                    {{ result.registration.exam.duration }} minutes
+                                </small>
+                            </div>
+                            <div class="col-6">
+                                <small class="text-white">
+                                    <i class="fas fa-paper-plane me-1"></i><strong>Submitted:</strong><br>
+                                    {{ result.submitted_at|date:"M d, Y" }}
+                                </small>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <small class="text-white">
+                            <i class="fas fa-code me-1"></i><strong>Exam Code:</strong> 
+                            <span class="badge bg-secondary">{{ result.registration.exam.exam_code }}</span>
+                        </small>
+                    </div>
+                </div>
+                <div class="card-footer">
+                    <div class="d-grid gap-2">
+                        <button class="btn btn-outline-primary" onclick="viewDetailedResult({{ result.id }})">
+                            <i class="fas fa-eye me-1"></i>View Details
+                        </button>
+                        <a href="{% url 'print_result_sheet' result.registration.exam.id %}" class="btn btn-outline-success" target="_blank">
+                            <i class="fas fa-print me-1"></i>Print Result
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+{% else %}
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body text-center py-5">
+                    <i class="fas fa-chart-line fa-4x text-white mb-3"></i>
+                    <h4 class="text-white">No results available</h4>
+                    <p class="text-white">You haven't completed any exams yet.</p>
+                    <a href="{% url 'browse_exams' %}" class="btn btn-primary">
+                        <i class="fas fa-search me-2"></i>Browse Available Exams
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endif %}
+
+<!-- Performance Summary -->
+{% if results %}
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-chart-bar me-2"></i>Performance Summary</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-3 mb-3">
+                        <div class="text-center">
+                            <div class="display-6 fw-bold text-primary">{{ results.count }}</div>
+                            <div class="text-white">Exams Taken</div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-3 mb-3">
+                        <div class="text-center">
+                            <div class="display-6 fw-bold text-success">
+                                {% widthratio results|length 1 1 %}
+                            </div>
+                            <div class="text-white">Passed</div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-3 mb-3">
+                        <div class="text-center">
+                            <div class="display-6 fw-bold text-warning">
+                                {% for result in results %}{{ result.score|add:0 }}{% if not forloop.last %}+{% endif %}{% endfor %}
+                            </div>
+                            <div class="text-white">Average Score</div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-3 mb-3">
+                        <div class="text-center">
+                            <div class="display-6 fw-bold text-info">
+                                {% for result in results %}{{ result.score|add:0 }}{% if not forloop.last %}+{% endif %}{% endfor %}
+                            </div>
+                            <div class="text-white">Highest Score</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- Result Details Modal -->
+<div class="modal fade" id="resultModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Result Details</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" id="resultModalBody">
+                <!-- Content will be loaded here -->
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary" onclick="printResult()">
+                    <i class="fas fa-print me-1"></i>Print Result
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .card {
+        transition: transform 0.2s ease-in-out;
+    }
+    
+    .card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+    }
+    
+    .display-4 {
+        font-size: 3rem;
+    }
+    
+    .display-6 {
+        font-size: 2rem;
+    }
+</style>
+
+<script>
+    function viewDetailedResult(resultId) {
+        // In a real implementation, you would fetch the detailed result via AJAX
+        // For now, we'll show a placeholder
+        document.getElementById('resultModalBody').innerHTML = `
+            <div class="text-center mb-4">
+                <div class="display-4 fw-bold text-primary">85</div>
+                <div class="text-white">Final Score</div>
+            </div>
+            
+            <div class="row mb-4">
+                <div class="col-md-6">
+                    <h6>Exam Information:</h6>
+                    <ul class="list-unstyled">
+                        <li><strong>Title:</strong> Sample Exam</li>
+                        <li><strong>Date:</strong> ${new Date().toLocaleDateString()}</li>
+                        <li><strong>Duration:</strong> 60 minutes</li>
+                        <li><strong>Questions:</strong> 10</li>
+                    </ul>
+                </div>
+                <div class="col-md-6">
+                    <h6>Performance:</h6>
+                    <ul class="list-unstyled">
+                        <li><strong>Correct:</strong> 8/10</li>
+                        <li><strong>Incorrect:</strong> 2/10</li>
+                        <li><strong>Grade:</strong> A (Very Good)</li>
+                        <li><strong>Time Used:</strong> 45 minutes</li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="mb-4">
+                <h6>Question Breakdown:</h6>
+                <div class="table-responsive">
+                    <table class="table table-sm">
+                        <thead>
+                            <tr>
+                                <th>Question</th>
+                                <th>Your Answer</th>
+                                <th>Correct Answer</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>1</td>
+                                <td>Option A</td>
+                                <td>Option A</td>
+                                <td><span class="badge bg-success">Correct</span></td>
+                            </tr>
+                            <tr>
+                                <td>2</td>
+                                <td>Option B</td>
+                                <td>Option C</td>
+                                <td><span class="badge bg-danger">Incorrect</span></td>
+                            </tr>
+                            <!-- More rows would be added here -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        `;
+        
+        new bootstrap.Modal(document.getElementById('resultModal')).show();
+    }
+    
+    function printResult() {
+        // In a real implementation, this would open the print result page
+        window.open('/exams/candidate/exams/print-result/1/', '_blank');
+    }
+</script>
+{% endblock %}

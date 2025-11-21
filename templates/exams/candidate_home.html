@@ -1,0 +1,254 @@
+{% extends 'base.html' %}
+
+{% block title %}Student Home - Exam Management System{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2><i class="fas fa-home me-2"></i>Welcome, {{ user.first_name|default:user.username }}!</h2>
+            <div>
+                <a href="{% url 'browse_exams' %}" class="btn btn-primary me-2">
+                    <i class="fas fa-search me-1"></i>Browse Exams
+                </a>
+                <a href="{% url 'candidate_requests' %}" class="btn btn-outline-primary">
+                    <i class="fas fa-envelope me-1"></i>My Requests
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Announcements Section -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header bg-info text-white">
+                <h5 class="mb-0"><i class="fas fa-bullhorn me-2"></i>Announcements & Tips</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-4 mb-3">
+                        <div class="alert alert-info">
+                            <i class="fas fa-lightbulb me-2"></i>
+                            <strong>Tip:</strong> Make sure to register for exams before the registration deadline.
+                        </div>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <div class="alert alert-warning">
+                            <i class="fas fa-clock me-2"></i>
+                            <strong>Reminder:</strong> Check your exam schedule regularly for updates.
+                        </div>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <div class="alert alert-success">
+                            <i class="fas fa-check-circle me-2"></i>
+                            <strong>Success:</strong> Always verify your registration status before exam day.
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Ongoing Exams Alert -->
+<div class="row mb-4" id="ongoingExamsAlert" style="display: none;">
+    <div class="col-12">
+        <div class="alert alert-warning alert-dismissible fade show" role="alert">
+            <h5 class="alert-heading"><i class="fas fa-exclamation-triangle me-2"></i>Exams Currently in Progress!</h5>
+            <p class="mb-0">You have exams that are currently ongoing. Click the "Join Exam" button to participate.</p>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    </div>
+</div>
+
+<!-- Upcoming Registered Exams -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-calendar-check me-2"></i>My Registered Exams</h5>
+            </div>
+            <div class="card-body">
+                {% if registrations %}
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Exam Title</th>
+                                    <th>Examiner</th>
+                                    <th>Exam Date</th>
+                                    <th>Duration</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for registration in registrations %}
+                                <tr id="exam-row-{{ registration.exam.id }}">
+                                    <td>
+                                        <strong>{{ registration.exam.title }}</strong>
+                                        <br><small class="text-white">Code: {{ registration.exam.exam_code }}</small>
+                                    </td>
+                                    <td>{{ registration.exam.examiner_name }}</td>
+                                    <td>
+                                        {{ registration.exam.exam_start|date:"M d, Y" }}
+                                        <br><small class="text-white">{{ registration.exam.exam_start|time:"g:i A" }}</small>
+                                    </td>
+                                    <td>{{ registration.exam.duration }} minutes</td>
+                                    <td>
+                                        <span class="badge status-badge status-ready" id="status-{{ registration.exam.id }}">
+                                            {{ registration.status }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <div class="btn-group" role="group">
+                                            <a href="{% url 'exam_instructions' registration.exam.id %}" class="btn btn-sm btn-outline-primary">
+                                                <i class="fas fa-info-circle me-1"></i>Instructions
+                                            </a>
+                                            <button class="btn btn-sm btn-success" id="join-btn-{{ registration.exam.id }}" 
+                                                    onclick="joinExam({{ registration.exam.id }}, '{{ registration.exam.exam_start|date:"c" }}', '{{ registration.exam.exam_end|date:"c" }}')"
+                                                    style="display: none;">
+                                                <i class="fas fa-play me-1"></i>Join Exam
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <div class="text-center py-4">
+                        <i class="fas fa-calendar-times fa-3x text-white mb-3"></i>
+                        <h5 class="text-white">No registered exams</h5>
+                        <p class="text-white">You haven't registered for any exams yet.</p>
+                        <a href="{% url 'browse_exams' %}" class="btn btn-primary">
+                            <i class="fas fa-search me-2"></i>Browse Available Exams
+                        </a>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Available Exams for Registration -->
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-plus-circle me-2"></i>Available Exams for Registration</h5>
+            </div>
+            <div class="card-body">
+                {% if available_exams %}
+                    <div class="row">
+                        {% for exam in available_exams %}
+                        <div class="col-md-6 col-lg-4 mb-3">
+                            <div class="card h-100">
+                                <div class="card-body">
+                                    <h6 class="card-title">{{ exam.title }}</h6>
+                                    <p class="card-text">
+                                        <small class="text-white">
+                                            <i class="fas fa-user me-1"></i>{{ exam.examiner_name }}<br>
+                                            <i class="fas fa-clock me-1"></i>{{ exam.duration }} minutes<br>
+                                            <i class="fas fa-calendar me-1"></i>Register by: {{ exam.registration_end|date:"M d, Y" }}
+                                        </small>
+                                    </p>
+                                </div>
+                                <div class="card-footer">
+                                    <a href="{% url 'register_for_exam' exam.id %}" class="btn btn-primary btn-sm w-100">
+                                        <i class="fas fa-user-plus me-1"></i>Register
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <div class="text-center py-4">
+                        <i class="fas fa-search fa-3x text-white mb-3"></i>
+                        <h5 class="text-white">No available exams</h5>
+                        <p class="text-white">There are currently no exams open for registration.</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // Check exam timing and show/hide join buttons
+    function checkExamTiming() {
+        const now = new Date();
+        let hasOngoingExams = false;
+        
+        // Check each exam
+        {% for registration in registrations %}
+            const examStart{{ registration.exam.id }} = new Date('{{ registration.exam.exam_start|date:"c" }}');
+            const examEnd{{ registration.exam.id }} = new Date('{{ registration.exam.exam_end|date:"c" }}');
+            const joinBtn{{ registration.exam.id }} = document.getElementById('join-btn-{{ registration.exam.id }}');
+            const statusBadge{{ registration.exam.id }} = document.getElementById('status-{{ registration.exam.id }}');
+            const examRow{{ registration.exam.id }} = document.getElementById('exam-row-{{ registration.exam.id }}');
+            
+            if (now >= examStart{{ registration.exam.id }} && now <= examEnd{{ registration.exam.id }}) {
+                // Exam is ongoing
+                joinBtn{{ registration.exam.id }}.style.display = 'inline-block';
+                statusBadge{{ registration.exam.id }}.className = 'badge status-badge bg-success';
+                statusBadge{{ registration.exam.id }}.textContent = 'Ongoing';
+                examRow{{ registration.exam.id }}.classList.add('table-success');
+                hasOngoingExams = true;
+            } else if (now < examStart{{ registration.exam.id }}) {
+                // Exam hasn't started yet
+                joinBtn{{ registration.exam.id }}.style.display = 'none';
+                statusBadge{{ registration.exam.id }}.className = 'badge status-badge bg-info';
+                statusBadge{{ registration.exam.id }}.textContent = 'Upcoming';
+                examRow{{ registration.exam.id }}.classList.remove('table-success');
+            } else {
+                // Exam has ended
+                joinBtn{{ registration.exam.id }}.style.display = 'none';
+                statusBadge{{ registration.exam.id }}.className = 'badge status-badge bg-secondary';
+                statusBadge{{ registration.exam.id }}.textContent = 'Ended';
+                examRow{{ registration.exam.id }}.classList.remove('table-success');
+            }
+        {% endfor %}
+        
+        // Show/hide ongoing exams alert
+        const ongoingAlert = document.getElementById('ongoingExamsAlert');
+        if (hasOngoingExams) {
+            ongoingAlert.style.display = 'block';
+        } else {
+            ongoingAlert.style.display = 'none';
+        }
+    }
+    
+    function joinExam(examId, startTime, endTime) {
+        const now = new Date();
+        const start = new Date(startTime);
+        const end = new Date(endTime);
+        
+        if (now < start) {
+            alert('Exam has not started yet. Please wait until the scheduled time.');
+            return;
+        }
+        
+        if (now > end) {
+            alert('Exam time has ended. You cannot join now.');
+            return;
+        }
+        
+        // Redirect to take exam
+        window.location.href = `/exams/candidate/exams/take/${examId}/`;
+    }
+    
+    // Check timing immediately and then every 30 seconds
+    checkExamTiming();
+    setInterval(checkExamTiming, 30000);
+    
+    // Also check every minute for more frequent updates
+    setInterval(checkExamTiming, 60000);
+</script>
+{% endblock %}

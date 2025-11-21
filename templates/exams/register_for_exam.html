@@ -1,0 +1,152 @@
+{% extends 'base.html' %}
+
+{% block title %}Register for {{ exam.title }} - Exam Management System{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-10 col-lg-8">
+        <div class="card">
+            <div class="card-header bg-success text-white">
+                <h4 class="mb-0">
+                    <i class="fas fa-user-plus me-2"></i>Register for {{ exam.title }}
+                </h4>
+            </div>
+            <div class="card-body">
+                <!-- Exam Information -->
+                <div class="alert alert-info">
+                    <h6><i class="fas fa-info-circle me-2"></i>Exam Information</h6>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <strong>Examiner:</strong> {{ exam.examiner_name }}<br>
+                            <strong>Duration:</strong> {{ exam.duration }} minutes<br>
+                            <strong>Exam Date:</strong> {{ exam.exam_start|date:"M d, Y" }}
+                        </div>
+                        <div class="col-md-6">
+                            <strong>Exam Time:</strong> {{ exam.exam_start|time:"g:i A" }}<br>
+                            <strong>Registration Deadline:</strong> {{ exam.registration_end|date:"M d, Y" }}<br>
+                            <strong>Exam Code:</strong> <span class="badge bg-primary">{{ exam.exam_code }}</span>
+                        </div>
+                    </div>
+                </div>
+
+                <form method="post">
+                    {% csrf_token %}
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="{{ form.student_name.id_for_label }}" class="form-label text-white">Full Name *</label>
+                            {{ form.student_name }}
+                            {% if form.student_name.errors %}
+                                <div class="text-danger small">{{ form.student_name.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="{{ form.student_phone.id_for_label }}" class="form-label text-white">Phone Number *</label>
+                            {{ form.student_phone }}
+                            {% if form.student_phone.errors %}
+                                <div class="text-danger small">{{ form.student_phone.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="{{ form.student_school.id_for_label }}" class="form-label text-white">School/Institution *</label>
+                            {{ form.student_school }}
+                            {% if form.student_school.errors %}
+                                <div class="text-danger small">{{ form.student_school.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="{{ form.student_class.id_for_label }}" class="form-label text-white">Class/Grade *</label>
+                            {{ form.student_class }}
+                            {% if form.student_class.errors %}
+                                <div class="text-danger small">{{ form.student_class.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="{{ form.student_group.id_for_label }}" class="form-label text-white">Group *</label>
+                            {{ form.student_group }}
+                            {% if form.student_group.errors %}
+                                <div class="text-danger small">{{ form.student_group.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="{{ form.student_whatsapp.id_for_label }}" class="form-label text-white">WhatsApp Number</label>
+                            {{ form.student_whatsapp }}
+                            {% if form.student_whatsapp.errors %}
+                                <div class="text-danger small">{{ form.student_whatsapp.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="{{ form.student_email.id_for_label }}" class="form-label text-white">Email Address *</label>
+                        {{ form.student_email }}
+                        {% if form.student_email.errors %}
+                            <div class="text-danger small">{{ form.student_email.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="{{ form.student_address.id_for_label }}" class="form-label text-white">Address</label>
+                        {{ form.student_address }}
+                        {% if form.student_address.errors %}
+                            <div class="text-danger small">{{ form.student_address.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="mb-4">
+                        <label for="{{ form.exam_code.id_for_label }}" class="form-label text-white">Exam Code *</label>
+                        {{ form.exam_code }}
+                        <div class="form-text">Enter the exam code provided by your examiner to verify your registration.</div>
+                        {% if form.exam_code.errors %}
+                            <div class="text-danger small">{{ form.exam_code.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="alert alert-warning">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        <strong>Important:</strong> Please ensure all information is correct before submitting. 
+                        Your registration will be reviewed by the examiner before approval.
+                    </div>
+                    
+                    <div class="d-flex justify-content-between">
+                        <a href="{% url 'browse_exams' %}" class="btn btn-secondary">
+                            <i class="fas fa-arrow-left me-2"></i>Back to Exams
+                        </a>
+                        <button type="submit" class="btn btn-success btn-lg">
+                            <i class="fas fa-paper-plane me-2"></i>Submit Registration
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .form-control {
+        border-radius: 0.5rem;
+        border: 1px solid #ced4da;
+        padding: 0.75rem;
+    }
+    
+    .form-control:focus {
+        border-color: #28a745;
+        box-shadow: 0 0 0 0.2rem rgba(40, 167, 69, 0.25);
+    }
+    
+    .form-label text-white {
+        font-weight: 600;
+        color: #2c3e50;
+    }
+    
+    .alert {
+        border-radius: 0.5rem;
+    }
+</style>
+{% endblock %}

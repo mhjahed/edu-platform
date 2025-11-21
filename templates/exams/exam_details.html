@@ -1,0 +1,204 @@
+{% extends 'base.html' %}
+
+{% block title %}Exam Details - {{ exam.title }}{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2><i class="fas fa-edit me-2"></i>Exam Details: {{ exam.title }}</h2>
+            <div>
+                <a href="{% url 'manage_exam' exam.id %}" class="btn btn-outline-primary me-2">
+                    <i class="fas fa-cog me-1"></i>Manage Exam
+                </a>
+                <a href="{% url 'examiner_dashboard' %}" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left me-1"></i>Back to Dashboard
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Exam Information -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-info-circle me-2"></i>Exam Information</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <p><strong>Title:</strong> {{ exam.title }}</p>
+                        <p><strong>Code:</strong> <span class="badge bg-primary">{{ exam.exam_code }}</span></p>
+                        <p><strong>Duration:</strong> {{ exam.duration }} minutes</p>
+                        <p><strong>Questions:</strong> {{ questions.count }}</p>
+                    </div>
+                    <div class="col-md-6">
+                        <p><strong>Registration Period:</strong> {{ exam.registration_start|date:"M d, Y" }} - {{ exam.registration_end|date:"M d, Y" }}</p>
+                        <p><strong>Exam Date:</strong> {{ exam.exam_start|date:"M d, Y" }} at {{ exam.exam_start|time:"g:i A" }}</p>
+                        <p><strong>Status:</strong> 
+                            {% if exam.registration_end > now %}
+                                <span class="badge bg-success">Open for Registration</span>
+                            {% elif exam.exam_end > now %}
+                                <span class="badge bg-warning">In Progress</span>
+                            {% else %}
+                                <span class="badge bg-secondary">Closed</span>
+                            {% endif %}
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Edit Exam Details Form -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-edit me-2"></i>Edit Exam Details</h5>
+            </div>
+            <div class="card-body">
+                <form method="post">
+                    {% csrf_token %}
+                    
+                    <div class="mb-3">
+                        <label for="{{ form.instructions.id_for_label }}" class="form-label">Exam Instructions</label>
+                        {{ form.instructions }}
+                        <div class="form-text">Provide detailed instructions for students taking this exam.</div>
+                        {% if form.instructions.errors %}
+                            <div class="text-danger small">{{ form.instructions.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="{{ form.difficulties.id_for_label }}" class="form-label">Exam Difficulty & Topics</label>
+                        {{ form.difficulties }}
+                        <div class="form-text">Describe the difficulty level and topics covered in this exam.</div>
+                        {% if form.difficulties.errors %}
+                            <div class="text-danger small">{{ form.difficulties.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="d-flex justify-content-between">
+                        <a href="{% url 'manage_exam' exam.id %}" class="btn btn-secondary">
+                            <i class="fas fa-arrow-left me-2"></i>Back to Management
+                        </a>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save me-2"></i>Update Details
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Questions Management -->
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0"><i class="fas fa-question-circle me-2"></i>Questions ({{ questions.count }})</h5>
+                <div>
+                    <a href="{% url 'add_mcq_question' exam.id %}" class="btn btn-sm btn-outline-primary me-1">
+                        <i class="fas fa-list me-1"></i>Add MCQ
+                    </a>
+                    <a href="{% url 'add_short_answer_question' exam.id %}" class="btn btn-sm btn-outline-info me-1">
+                        <i class="fas fa-keyboard me-1"></i>Add Short Answer
+                    </a>
+                    <a href="{% url 'add_drag_drop_question' exam.id %}" class="btn btn-sm btn-outline-warning">
+                        <i class="fas fa-arrows-alt me-1"></i>Add Drag & Drop
+                    </a>
+                </div>
+            </div>
+            <div class="card-body">
+                {% if questions %}
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>#</th>
+                                    <th>Question</th>
+                                    <th>Type</th>
+                                    <th>Correct Answer</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for question in questions %}
+                                <tr>
+                                    <td>{{ forloop.counter }}</td>
+                                    <td>
+                                        <strong>{{ question.question_text|truncatechars:100 }}</strong>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-{% if question.question_type == 'MCQ' %}primary{% elif question.question_type == 'Short Answer' %}info{% else %}warning{% endif %}">
+                                            {{ question.question_type }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        {% if question.question_type == 'MCQ' %}
+                                            {{ question.correct_answer }}
+                                        {% elif question.question_type == 'Short Answer' %}
+                                            <small class="text-muted">Manual grading required</small>
+                                        {% else %}
+                                            <small class="text-muted">Order: {{ question.correct_answer }}</small>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <div class="btn-group" role="group">
+                                            <button class="btn btn-sm btn-outline-primary" onclick="editQuestion({{ question.id }})">
+                                                <i class="fas fa-edit"></i>
+                                            </button>
+                                            <button class="btn btn-sm btn-outline-danger" onclick="deleteQuestion({{ question.id }})">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <div class="text-center py-4">
+                        <i class="fas fa-question-circle fa-3x text-muted mb-3"></i>
+                        <h5 class="text-muted">No questions added yet</h5>
+                        <p class="text-muted">Start by adding questions to your exam.</p>
+                        <div class="d-flex justify-content-center gap-2">
+                            <a href="{% url 'add_mcq_question' exam.id %}" class="btn btn-primary">
+                                <i class="fas fa-list me-1"></i>Add MCQ Question
+                            </a>
+                            <a href="{% url 'add_short_answer_question' exam.id %}" class="btn btn-info">
+                                <i class="fas fa-keyboard me-1"></i>Add Short Answer
+                            </a>
+                            <a href="{% url 'add_drag_drop_question' exam.id %}" class="btn btn-warning">
+                                <i class="fas fa-arrows-alt me-1"></i>Add Drag & Drop
+                            </a>
+                        </div>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    function editQuestion(questionId) {
+        // Implement edit functionality
+        alert('Edit question functionality will be implemented');
+    }
+    
+    function deleteQuestion(questionId) {
+        if (confirm('Are you sure you want to delete this question?')) {
+            // Implement delete functionality
+            alert('Delete question functionality will be implemented');
+        }
+    }
+</script>
+{% endblock %}
