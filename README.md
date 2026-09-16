@@ -1,279 +1,137 @@
-# 🎓 Exam Management System
+<!-- EXAM MANAGEMENT SYSTEM · indigo #818cf8 on #0d1117 · widgets verified 2026-09-12 -->
 
-A comprehensive Django-based web application for managing exams, student registrations, and results with a modern, user-friendly interface.
+<div align="center">
 
-## ✨ Features
+<img width="100%" src="https://capsule-render.vercel.app/api?type=rect&color=0:0d1117,100:818cf8&height=190&section=header&text=EXAM%20MANAGEMENT&fontSize=54&fontColor=ffffff&animation=fadeIn&fontAlignY=36&desc=dual%20portals%20%C2%B7%20exam%20codes%20%C2%B7%20timed%20exams%20%C2%B7%20pdf%20results%20%E2%80%94%20django%205.2&descSize=16&descAlignY=60" alt="Exam Management System" />
 
-### 🔐 **Dual Authentication System**
-- **Examiner Registration/Login**: Separate authentication for exam creators
-- **Student Registration/Login**: Dedicated student portal
-- **Role-based Access Control**: Secure access based on user roles
-- **Profile Management**: Auto-fill forms with saved profile data
+<img src="https://readme-typing-svg.demolab.com?font=JetBrains+Mono&weight=600&size=19&duration=2600&pause=900&color=A5B4FC&center=true&vCenter=true&width=780&height=95&lines=examiner+side+%C3%97+candidate+side;exam+code+validation+%C2%B7+real-time+timer;pdf+sheets+%C2%B7+results+%C2%B7+requests" alt="typing" />
 
-### 👨‍🏫 **Examiner Workflow**
-1. **Create Exam** (`/examiner/create-exam/`)
-   - Set exam title, description, and unique exam code
-   - Configure duration and registration/exam dates
-   - Auto-fill examiner information from profile
+<p>
+  <img src="https://img.shields.io/badge/django-5.2.6-0d1117?style=for-the-badge&logo=django&logoColor=44b78b" alt="django" />
+  <img src="https://img.shields.io/badge/python-3.8%2B-0d1117?style=for-the-badge&logo=python&logoColor=3776ab" alt="python" />
+  <img src="https://img.shields.io/badge/bootstrap-5-0d1117?style=for-the-badge&logo=bootstrap&logoColor=7952b3" alt="bootstrap" />
+  <img src="https://img.shields.io/badge/auth-dual%20portal-818cf8?style=for-the-badge&logoColor=white" alt="auth" />
+  <img src="https://img.shields.io/badge/pdf-sheets%20%2B%20results-0d1117?style=for-the-badge&logoColor=a5b4fc" alt="pdf" />
+</p>
 
-2. **Set Exam Details** (`/examiner/exam-details/<exam_id>/`)
-   - Add detailed instructions for students
-   - Specify difficulty level and topics
-   - Manage question types (MCQ, Short Answer, Drag-Drop)
+</div>
 
-3. **Manage Exam** (`/examiner/manage-exam/<exam_id>/`)
-   - View and verify student registrations
-   - Invalidate registrations with reasons
-   - Track participation and results
-   - Handle student requests and inquiries
+<img width="100%" src="https://capsule-render.vercel.app/api?type=rect&color=0:0d1117,50:818cf8,100:0d1117&height=3" alt="" />
 
-### 🎓 **Student Workflow**
-1. **Home Dashboard** (`/candidate/home/`)
-   - View announcements and tips
-   - See upcoming registered exams
-   - Quick access to exam browsing
+## ▍$ cat overview.txt
 
-2. **Browse & Register** (`/candidate/exams/`)
-   - View all available exams
-   - Register with exam code verification
-   - Auto-fill registration from profile
+A full exam operations system with **separate portals for examiners and
+candidates** — from authoring an exam, through code-gated registration, to timed
+sittings and printable result sheets. Role-aware routing keeps each side of the
+platform in its own lane.
 
-3. **Registration Process**
-   - **Confirmation** (`/candidate/exams/confirmation/<exam_id>/`)
-     - PDF preview of registration form
-     - Print registration documents
-   - **Instructions** (`/candidate/exams/instructions/<exam_id>/`)
-     - View exam details and instructions
-     - Check registration status
+```yaml
+portals   : examiner (create/manage/verify) · candidate (register/sit/results)
+questions : mcq · short answer · drag-and-drop — auto-numbered
+pipeline  : pending verification → ready for exam → invalid (with reason)
+docs      : registration forms + result sheets — print-optimized pdf
+comms     : request / reply messaging with status tracking
+```
 
-4. **Exam Taking** (`/candidate/exams/take/<exam_id>/`)
-   - Interactive exam interface
-   - Real-time timer and progress tracking
-   - Multiple question types support
+<img width="100%" src="https://capsule-render.vercel.app/api?type=rect&color=0:0d1117,50:818cf8,100:0d1117&height=3" alt="" />
 
-5. **Results & Requests**
-   - View exam results with detailed breakdown
-   - Submit inquiries and requests
-   - Print result sheets
+## ▍$ whoami --role
 
-### 📊 **Advanced Features**
-- **Registration Verification System**
-  - Pending Verification → Ready for Exam → Invalid
-  - Reason tracking for invalidated registrations
-  - Automatic student notifications
+<table>
+<tr>
+<th width="50%">EXAMINER</th>
+<th width="50%">CANDIDATE</th>
+</tr>
+<tr>
+<td valign="top">
 
-- **Messaging System**
-  - Student requests and inquiries
-  - Examiner replies with templates
-  - Request status tracking
+▸ create exam — title, code, dates, duration
+▸ compose instructions + difficulty + topics
+▸ add mcq / short / drag-drop questions
+▸ verify or invalidate registrations (with reason)
+▸ track participation, handle requests
+▸ print full exam result reports
 
-- **PDF Generation**
-  - Professional registration forms
-  - Detailed result sheets
-  - Exam results reports for examiners
+</td>
+<td valign="top">
 
-- **Question Management**
-  - Multiple Choice Questions (MCQ)
-  - Short Answer Questions
-  - Drag & Drop Questions
-  - Auto-generated question numbering
+▸ home dashboard — announcements, tips
+▸ browse exams · register with **exam code**
+▸ pdf-preview + print registration form
+▸ read instructions before the clock starts
+▸ sit exam — live timer + progress tracking
+▸ view results, submit inquiries, print sheet
 
-## 🚀 **Quick Start**
+</td>
+</tr>
+</table>
 
-### Prerequisites
-- Python 3.8+
-- Django 5.2.6
-- SQLite (included with Python)
+```diff
+registration guard:  code wrong → rejected · pending → verified → ready
+                     examiner invalidates → reason logged → student notified
+```
 
-### Installation
+<img width="100%" src="https://capsule-render.vercel.app/api?type=rect&color=0:0d1117,50:818cf8,100:0d1117&height=3" alt="" />
 
-1. **Clone/Download the project**
-   ```bash
-   cd exam_management_system
-   ```
+## ▍$ ./setup
 
-2. **Install dependencies**
-   ```bash
-   pip install django
-   ```
+```bash
+git clone https://github.com/mhjahed/exam-management.git && cd exam-management
+pip install django
+python manage.py migrate
+python manage.py createsuperuser        # optional — admin panel
+python manage.py runserver              # → http://127.0.0.1:8000/
+```
 
-3. **Run migrations**
-   ```bash
-   python manage.py migrate
-   ```
+<img width="100%" src="https://capsule-render.vercel.app/api?type=rect&color=0:0d1117,50:818cf8,100:0d1117&height=3" alt="" />
 
-4. **Create superuser (optional)**
-   ```bash
-   python manage.py createsuperuser
-   ```
+## ▍$ grep -E "^(GET|POST)" routes.map — condensed
 
-5. **Start development server**
-   ```bash
-   python manage.py runserver
-   ```
+| SIDE | ROUTE | PURPOSE |
+|---|---|---|
+| examiner | `/examiner/signup/` · `/login/` · `/profile/` | auth + auto-fill profile |
+| examiner | `/examiner/create-exam/` | new exam + code |
+| examiner | `/examiner/exam-details/<id>/` | instructions + question set |
+| examiner | `/examiner/manage-exam/<id>/` · `/requests/` · `/request/<id>/reply/` | verification + comms |
+| candidate | `/candidate/home/` · `/exams/` | dashboard + catalogue |
+| candidate | `/candidate/exams/register/<id>/` · `/confirmation/<id>/` · `/instructions/<id>/` | registration pipeline |
+| candidate | `/candidate/exams/take/<id>/` · `/results/<id>/` | the sitting + outcome |
+| candidate | `/candidate/requests/` | inquiries + replies |
 
-6. **Access the application**
-   - Open browser to `http://127.0.0.1:8000/`
-   - Create examiner or student accounts
-   - Start using the system!
-
-## 📁 **Project Structure**
+## ▍$ tree .
 
 ```
 exam_management_system/
-├── exam_system/           # Main Django project
-│   ├── settings.py       # Django settings
-│   ├── urls.py          # Main URL configuration
-│   └── wsgi.py          # WSGI configuration
-├── users/                # User authentication app
-│   ├── models.py        # User profile models
-│   ├── views.py         # Authentication views
-│   ├── forms.py         # Registration forms
-│   └── urls.py          # User URLs
-├── exams/                # Exam management app
-│   ├── models.py        # Exam, Question, Registration models
-│   ├── views.py         # Exam workflow views
-│   ├── forms.py         # Exam forms
-│   └── urls.py          # Exam URLs
-├── messaging/            # Communication app
-│   ├── models.py        # Message and Request models
-│   ├── views.py         # Messaging views
-│   └── urls.py          # Messaging URLs
-├── templates/            # HTML templates
-│   ├── base.html        # Base template
-│   ├── home.html        # Landing page
-│   ├── users/           # Authentication templates
-│   ├── exams/           # Exam-related templates
-│   └── messaging/       # Messaging templates
-├── static/               # Static files
-│   └── css/
-│       └── style.css    # Custom CSS
-└── manage.py            # Django management script
+├── exam_system/     settings · urls · wsgi
+├── users/           profiles · dual auth
+├── exams/           exam · question · registration · result models
+├── messaging/       request / reply system
+├── templates/       base · users · exams · messaging
+├── static/css/
+└── manage.py
 ```
 
-## 🎨 **UI/UX Features**
+**security** — rbac routing · exam-code validation · csrf tokens · full form validation · django auth
+**ui** — bootstrap 5 · examiner blue / student green schemes · font awesome · print-optimized
 
-- **Modern Design**: Bootstrap 5 with custom styling
-- **Responsive Layout**: Works on desktop, tablet, and mobile
-- **Professional Color Scheme**: Blue for examiners, green for students
-- **Font Awesome Icons**: Enhanced visual appeal
-- **Interactive Elements**: Hover effects, animations, and transitions
-- **Print-Optimized**: Professional PDF-ready templates
+<img width="100%" src="https://capsule-render.vercel.app/api?type=rect&color=0:0d1117,50:818cf8,100:0d1117&height=3" alt="" />
 
-## 🔧 **Technical Details**
+## ▍$ cat deploy.notes
 
-### **Database Models**
-- **Profile**: Extended user profiles with role-specific fields
-- **Exam**: Comprehensive exam information with examiner details
-- **Question**: Support for multiple question types
-- **Registration**: Detailed student registration with status tracking
-- **Result**: Exam results with answer tracking
-- **Request**: Student-instructor communication system
-
-### **URL Structure**
-```
-# Examiner URLs
-/examiner/signup/                    # Examiner registration
-/examiner/login/                     # Examiner login
-/examiner/profile/                   # Examiner profile
-/examiner/create-exam/               # Create new exam
-/examiner/exam-details/<id>/         # Set exam details
-/examiner/manage-exam/<id>/          # Manage exam
-/examiner/manage-exam/<id>/requests/ # View requests
-/examiner/request/<id>/reply/        # Reply to request
-
-# Student URLs
-/candidate/signup/                   # Student registration
-/candidate/login/                    # Student login
-/candidate/profile/                  # Student profile
-/candidate/home/                     # Student dashboard
-/candidate/exams/                    # Browse exams
-/candidate/exams/register/<id>/      # Register for exam
-/candidate/exams/confirmation/<id>/  # Registration confirmation
-/candidate/exams/instructions/<id>/  # Exam instructions
-/candidate/exams/take/<id>/          # Take exam
-/candidate/exams/results/<id>/       # View results
-/candidate/requests/                 # Student requests
+```bash
+# production checklist
+DEBUG=False                # settings.py
+ALLOWED_HOSTS=[...]        # your domain
+python manage.py collectstatic
+# postgres recommended · gunicorn + nginx · ssl via certbot
 ```
 
-### **Key Features**
-- **Exam Code Validation**: Secure registration with unique codes
-- **Profile Auto-fill**: Seamless form completion
-- **Status Tracking**: Complete registration workflow
-- **PDF Generation**: Professional document printing
-- **Real-time Updates**: Live progress tracking
-- **Mobile Responsive**: Works on all devices
+<br/>
 
-## 🎯 **Usage Examples**
+<div align="center">
 
-### **For Examiners**
-1. Register as an examiner
-2. Create an exam with unique code
-3. Add questions (MCQ, Short Answer, Drag-Drop)
-4. Set exam details and instructions
-5. Verify student registrations
-6. Monitor exam participation
-7. View and print results
+`built end-to-end by` **[MH JAHED](https://github.com/mhjahed)** · sylhet, bangladesh · `mhjahed@proton.me`
 
-### **For Students**
-1. Register as a student
-2. Browse available exams
-3. Register with exam code
-4. View registration confirmation
-5. Read exam instructions
-6. Take the exam
-7. View results and print certificates
+</div>
 
-## 🔒 **Security Features**
-
-- **Role-based Access Control**: Users can only access their designated areas
-- **Exam Code Validation**: Prevents unauthorized registrations
-- **CSRF Protection**: Django's built-in security
-- **Input Validation**: Comprehensive form validation
-- **Secure Authentication**: Django's authentication system
-
-## 📱 **Browser Support**
-
-- Chrome 90+
-- Firefox 88+
-- Safari 14+
-- Edge 90+
-- Mobile browsers (iOS Safari, Chrome Mobile)
-
-## 🚀 **Deployment**
-
-For production deployment:
-
-1. **Configure Settings**
-   - Set `DEBUG = False`
-   - Configure `ALLOWED_HOSTS`
-   - Set up proper database (PostgreSQL recommended)
-
-2. **Static Files**
-   ```bash
-   python manage.py collectstatic
-   ```
-
-3. **Environment Variables**
-   - Set `SECRET_KEY`
-   - Configure database credentials
-   - Set up email settings
-
-4. **Web Server**
-   - Use Gunicorn or uWSGI
-   - Configure Nginx or Apache
-   - Set up SSL certificates
-
-## 📞 **Support**
-
-For technical support or feature requests, please contact the development team.
-
-## 📄 **License**
-
-This project is developed for educational and institutional use.
-
----
-
-**🎉 The Exam Management System is now complete and ready for use!**
-
-Access the system at `http://127.0.0.1:8000/` and start managing exams efficiently with this comprehensive solution.
+<img width="100%" src="https://capsule-render.vercel.app/api?type=waving&color=0:818cf8,100:0d1117&height=110&section=footer" alt="" />
